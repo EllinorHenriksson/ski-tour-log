@@ -72,11 +72,14 @@ The following questions **MUST** be answered in the report.
 5. Since this is your first own web API, there are probably things you would solve in another way, looking back at this assignment. Write your thoughts about this.
 6. Which "linguistic design rules" have you implemented? List them here and motivate "for each" of them very briefly why did you choose them? Remember that you must consider "at least" FIVE "linguistic design rules" as the linguistic quality of your API.
 7. Did you do something extra besides the fundamental requirements? Explain them.
-8. **Do not miss it!** A text document "LastName_API_Documentation.txt" where you will list your resource URIs and their corresponding brief descriptions. If you have a URI being used with multiple HTTP methods, you need to describe each pair of **HTTP METHOD: URI** separately. For example, if you have a resource URI as www.example.com/fish/types and you have HTTP methods GET, PUT, POST, and DELETE to perform something on that resource, you need to describe each pair of Method and URI briefly, e.g., what GET www.example.com/fish/types does, what PUT www.example.com/fish/types does, what DELETE www.example.com/fish/types does, and so on.
+
+## doumentation.md
+
+**Do not miss it!** A markdaown document named "documentation.md" where you will list your resource URIs and their corresponding brief descriptions. If you have a URI being used with multiple HTTP methods, you need to describe each pair of **HTTP METHOD: URI** separately. For example, if you have a resource URI as www.example.com/fish/types and you have HTTP methods GET, PUT, POST, and DELETE to perform something on that resource, you need to describe each pair of Method and URI briefly, e.g., what GET www.example.com/fish/types does, what PUT www.example.com/fish/types does, what DELETE www.example.com/fish/types does, and so on.
 
 ## Examination
 
-The grade for this assignment is F (fail), Fx (fail, with options to improve), and P (pass). We will take note of your effort and give you grades like P-, P, or P+ that could affect your final grade on this course. 
+The grade for this assignment is F (fail), F/C (fail, with options to complement for pass), and P (pass). We will take note of your effort and give you grades like P-, P, or P+ that could affect your final grade on this course. 
 We will look at the "linguistic design quality" and "structure" of the API and the code, how easy your API is to understand, the extent of your effort, and the easiness for the examiner to test your solution.
 
 ## Hints
@@ -87,20 +90,3 @@ We will look at the "linguistic design quality" and "structure" of the API and t
 * Maybe a simple client application will help you develop a good API, especially with respect to HATEOAS.
 * Learning and using POSTMAN/NEWMAN is your responsibility. Make sure to read the article: [https://scotch.io/tutorials/write-api-tests-with-postman-and-newman]
 
-## Hand in the assignment
-
-You hand in your assignment by making a Merge Request (MR). Make sure you do the following:
-
-* Create an MR from your 'main'-branch to your 'lnu/submit'-branch.
-* Add a title: "Submission, API design assignment".
-* Check the boxes in the description by adding an 'x' between the brackets.
-* Make sure to fill in the Assignment Report. (The questions are in HTML comments so that you can leave them there. Make sure to **not** write your code inside comments!)
-* Select the milestone you want to link the submission to. Important!
-
-Do not add anything else. Do not close your MR. Doing that will count as if you have withdrawn your submission.
-
-You can continue to push to the main branch, and those commits will be added to the submission. The pipeline will indicate that your submission is late if you commit after the deadline.
-
-You can edit the MR, and the assignment report after the MR is opened.
-
-You can add comments to your MR if you want to communicate anything to the examiner.
