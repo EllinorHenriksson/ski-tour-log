@@ -26,6 +26,87 @@ export class UserController {
   }
 
   /**
+   * Registers a user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async register (req, res, next) {
+    try {
+      const data = {
+        username: req.body.username,
+        password: req.body.password,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email
+      }
+
+      const user = await this.#service.insert(data)
+
+      const location = new URL(
+        `${req.protocol}://${req.get('host')}${req.baseUrl}/${user._id}`
+      )
+
+      res
+        .location(location.href)
+        .status(201)
+        .json({
+          ...user,
+          links: {
+            self: location,
+            tours: `${location}/tours`,
+            collection: `${req.protocol}://${req.get('host')}${req.baseUrl}`
+          }
+        })
+    } catch (error) {
+      let err = error
+      if (error.code === 11000) {
+        err = createError(409, 'Username and/or email address already registered')
+      } else if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
+
+      next(err)
+    }
+  }
+
+  /**
+   * Logs in the user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async login (req, res, next) {
+    try {
+      const user = await User.authenticate(req.body.username, req.body.password)
+
+      // Create JWT.
+      const jwtToken = helper.createJwt(user)
+
+      // Create refresh token.
+      const refreshToken = helper.createRefreshToken(user, req.ip)
+      await refreshToken.save()
+
+      // Set cookie with refresh token.
+      helper.setTokenCookie(res, refreshToken.token)
+
+      res
+        .json({
+          jwt: jwtToken,
+          user
+        })
+    } catch (error) {
+      // Authentication failed.
+      const err = createError(401, 'Credentials invalid or not provided')
+      err.cause = error
+
+      next(err)
+    }
+  }
+
+  /**
    * Provide req.user to the route if :id is present.
    *
    * @param {object} req - Express request object.
@@ -52,6 +133,17 @@ export class UserController {
     } catch (error) {
       next(error)
     }
+  }
+
+  /**
+   * Logs out the user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async logout (req, res, next) {
+    // TODO
   }
 
   /**

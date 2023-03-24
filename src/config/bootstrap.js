@@ -2,15 +2,11 @@
  * Module for bootstrapping.
  */
 
-// OBS! Ändra denna så den passar applikationen
-
 import { IoCContainer } from '../util/IoCContainer.js'
 
 import { UserModel } from '../models/UserModel.js'
 import { UserRepository } from '../repositories/UserRepository.js'
 import { UserService } from '../services/UserService.js'
-
-import { AuthController } from '../controllers/AuthController.js'
 import { UserController } from '../controllers/UserController.js'
 
 const iocContainer = new IoCContainer()
@@ -36,12 +32,6 @@ iocContainer.register('UserServiceSingleton', UserService, {
 iocContainer.register('UserController', UserController, {
   dependencies: [
     'UserServiceSingleton'
-  ]
-})
-
-iocContainer.register('AuthController', AuthController, {
-  dependencies: [
-    'AuthServiceSingleton'
   ]
 })
 

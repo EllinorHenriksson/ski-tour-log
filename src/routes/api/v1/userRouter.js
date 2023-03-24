@@ -20,6 +20,15 @@ router.param('id', (req, res, next, id) => resolveUserController(req).loadUser(r
 // GET users
 router.get('/', (req, res, next) => resolveUserController(req).findAll(req, res, next))
 
+// POST users/register
+router.get('/register', (req, res, next) => resolveUserController(req).register(req, res, next))
+
+// POST users/login
+router.get('/login', (req, res, next) => resolveUserController(req).login(req, res, next))
+
+// POST users/register
+router.get('/logout', (req, res, next) => resolveUserController(req).findAll(req, res, next))
+
 // GET users/:id
 router.get('/:id', (req, res, next) => resolveUserController(req).find(req, res, next))
 
