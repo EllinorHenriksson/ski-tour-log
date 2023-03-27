@@ -15,10 +15,17 @@ export const router = express.Router()
 const resolveUserController = (req) => req.app.get('container').resolve('UserController')
 
 // Provide req.user to the route if :id is present in the route path.
-router.param('id', (req, res, next, id) => resolveUserController(req).loadUser(req, res, next, id))
+// Must be authenticated.
+router.param('id',
+  (req, res, next, id) => resolveUserController(req).loadUser(req, res, next, id)
+)
 
 // GET users
-router.get('/', (req, res, next) => resolveUserController(req).findAll(req, res, next))
+// Must be authenticated
+router.get('/',
+  (req, res, next) => resolveUserController(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveUserController(req).findAll(req, res, next)
+)
 
 // POST users/register
 router.post('/register', (req, res, next) => resolveUserController(req).register(req, res, next))
@@ -27,10 +34,21 @@ router.post('/register', (req, res, next) => resolveUserController(req).register
 router.post('/login', (req, res, next) => resolveUserController(req).login(req, res, next))
 
 // GET users/:id
-router.get('/:id', (req, res, next) => resolveUserController(req).find(req, res, next))
+router.get('/:id',
+  (req, res, next) => resolveUserController(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveUserController(req).find(req, res, next)
+)
 
 // PATCH users/:id
-router.patch('/:id', (req, res, next) => resolveUserController(req).partiallyUpdate(req, res, next))
+router.patch('/:id',
+  (req, res, next) => resolveUserController(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveUserController(req).authorizeUser(req, res, next),
+  (req, res, next) => resolveUserController(req).partiallyUpdate(req, res, next)
+)
 
 // PUT users/:id
-router.put('/:id', (req, res, next) => resolveUserController(req).update(req, res, next))
+router.put('/:id',
+  (req, res, next) => resolveUserController(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveUserController(req).authorizeUser(req, res, next),
+  (req, res, next) => resolveUserController(req).update(req, res, next)
+)

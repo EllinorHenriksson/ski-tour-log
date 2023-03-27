@@ -27,6 +27,75 @@ export class UserController {
   }
 
   /**
+   * Provide req.requestedUser to the route if :id is present.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   * @param {string} id - The value of the id for the task to load.
+   */
+  async loadUser (req, res, next, id) {
+    try {
+      // Get the user.
+      const user = await this.#service.getById(id)
+
+      // If no user found send a 404 (Not Found).
+      if (!user) {
+        next(createError(404, 'The requested resource was not found.'))
+        return
+      }
+
+      // Provide the user to req.
+      req.requestedUser = user
+
+      // Next middleware.
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * Authenticates requests and populates req.authenticatedUser with the user resource object.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async authenticateJWT (req, res, next) {
+    try {
+      console.log("2");
+
+      const [authenticationScheme, token] = req.headers.authorization?.split(' ')
+      if (authenticationScheme !== 'Bearer') {
+        throw new Error('Invalid authentication scheme')
+      }
+
+      const publicKey = Buffer.from(process.env.PUBLIC_KEY, 'base64')
+
+      const payload = jwt.verify(token, publicKey)
+
+      req.authenticatedUser = await this.#service.getById(payload.sub)
+
+      if (!req.authenticatedUser) {
+        throw new Error('User not in database')
+      }
+
+      next()
+    } catch (err) {
+      const error = createError(401, 'JWT invalid or not provided')
+      error.cause = err
+      next(error)
+    }
+  }
+
+  authorizeUser (req, res, next) {
+    if (req.authenticatedUser.id !== req.requestedUser.id) {
+      next(createError(403, 'You do not have rights to this resource'))
+    }
+  }
+
+  /**
    * Registers a user.
    *
    * @param {object} req - Express request object.
@@ -184,35 +253,6 @@ export class UserController {
   }
 
   /**
-   * Provide req.user to the route if :id is present.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   * @param {string} id - The value of the id for the task to load.
-   */
-  async loadUser (req, res, next, id) {
-    try {
-      // Get the user.
-      const user = await this.#service.getById(id)
-
-      // If no user found send a 404 (Not Found).
-      if (!user) {
-        next(createError(404, 'The requested resource was not found.'))
-        return
-      }
-
-      // Provide the user to req.
-      req.user = user
-
-      // Next middleware.
-      next()
-    } catch (error) {
-      next(error)
-    }
-  }
-
-  /**
    * Sends a JSON response containing a user.
    *
    * @param {object} req - Express request object.
@@ -220,7 +260,7 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    res.json(req.user)
+    res.json(req.requestedUser)
   }
 
   /**
