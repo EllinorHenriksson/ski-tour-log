@@ -1,5 +1,5 @@
 /**
- * Mongoose model User.
+ * Mongoose model UserModel.
  */
 
 import bcrypt from 'bcrypt'
@@ -70,7 +70,7 @@ schema.pre('save', async function () {
  *
  * @param {string} username - ...
  * @param {string} password - ...
- * @returns {Promise<User>} ...
+ * @returns {Promise<UserModel>} ...
  */
 schema.statics.authenticate = async function (username, password) {
   const user = await this.findOne({ username })

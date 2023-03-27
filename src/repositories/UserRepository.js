@@ -17,4 +17,8 @@ export class UserRepository extends MongooseRepositoryBase {
   constructor (model = UserModel) {
     super(model)
   }
+
+  async authenticate (username, password) {
+    return this._model.authenticate(username, password)
+  }
 }

@@ -7,4 +7,4 @@ import { router as userRouter } from './userRouter.js'
 
 export const router = express.Router()
 
-router.use('/user', userRouter)
+router.use('/users', userRouter)

@@ -4,6 +4,7 @@
 
 import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
+import jwt from 'jsonwebtoken'
 
 /**
  * Encapsulates a controller.
@@ -60,8 +61,12 @@ export class UserController {
           method: 'PUT',
           href: location
         },
-        tour: {
+        tours: {
           method: 'GET',
+          href: `${location}/tour`
+        },
+        createTours: {
+          method: 'POST',
           href: `${location}/tour`
         }
       }
@@ -107,22 +112,67 @@ export class UserController {
    */
   async login (req, res, next) {
     try {
-      const user = await User.authenticate(req.body.username, req.body.password)
+      let user = await this.#service.authenticate(req.body.username, req.body.password)
 
-      // Create JWT.
-      const jwtToken = helper.createJwt(user)
+      const payload = {
+        sub: user.username,
+        email: user.email
+      }
 
-      // Create refresh token.
-      const refreshToken = helper.createRefreshToken(user, req.ip)
-      await refreshToken.save()
+      const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
 
-      // Set cookie with refresh token.
-      helper.setTokenCookie(res, refreshToken.token)
+      // Create access token.
+      const accessToken = jwt.sign(payload, privateKey, {
+        algorithm: 'RS256',
+        expiresIn: process.env.ACCESS_TOKEN_LIFE
+      })
+
+      const location = new URL(
+        `${req.protocol}://${req.get('host')}${req.baseUrl}/${user._id}`
+      )
+
+      user = user.toObject()
+      user.links = {
+        self: {
+          method: 'GET',
+          href: location
+        },
+        update: {
+          method: 'PATCH',
+          href: location
+        },
+        replace: {
+          method: 'PUT',
+          href: location
+        },
+        tours: {
+          method: 'GET',
+          href: `${location}/tour`
+        },
+        createTours: {
+          method: 'POST',
+          href: `${location}/tour`
+        }
+      }
 
       res
         .json({
-          jwt: jwtToken,
-          user
+          accessToken,
+          user,
+          links: {
+            collection: {
+              method: 'GET',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}`
+            },
+            register: {
+              method: 'POST',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/register`
+            },
+            login: {
+              method: 'POST',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/login`
+            }
+          }
         })
     } catch (error) {
       // Authentication failed.

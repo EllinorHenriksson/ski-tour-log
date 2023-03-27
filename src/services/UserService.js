@@ -17,4 +17,8 @@ export class UserService extends MongooseServiceBase {
   constructor (repository = new UserRepository()) {
     super(repository)
   }
+
+  async authenticate (username, password) {
+    return this._repository.authenticate(username, password)
+  }
 }

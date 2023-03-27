@@ -13,7 +13,7 @@ export class MongooseRepositoryBase {
    *
    * @type {mongoose.Model}
    */
-  #model
+  _model // Protected!!!
 
   /**
    * The allowed model property names.
@@ -28,7 +28,7 @@ export class MongooseRepositoryBase {
    * @param {mongoose.Model} model - A Mongoose model.
    */
   constructor (model) {
-    this.#model = model
+    this._model = model
   }
 
   /**
@@ -41,7 +41,7 @@ export class MongooseRepositoryBase {
     if (!this.#allowedModelPropertyNames) {
       const disallowedPropertyNames = ['_id', '__v', 'createdAt', 'updatedAt', 'id']
       this.#allowedModelPropertyNames = Object.freeze(
-        Object.keys(this.#model.schema.tree)
+        Object.keys(this._model.schema.tree)
           .filter(key => !disallowedPropertyNames.includes(key))
       )
     }
@@ -61,7 +61,7 @@ export class MongooseRepositoryBase {
    * @returns {Promise<object[]>} Promise resolved with the found documents.
    */
   async get (filter, projection = null, options = null) {
-    return this.#model
+    return this._model
       .find(filter, projection, options)
       .exec()
   }
@@ -75,7 +75,7 @@ export class MongooseRepositoryBase {
    * @returns {Promise<object>} Promise resolved with the found document.
    */
   async getById (id, projection, options) {
-    return this.#model
+    return this._model
       .findById(id, projection, options)
       .exec()
   }
@@ -89,7 +89,7 @@ export class MongooseRepositoryBase {
    * @returns {Promise<object>} Promise resolved with the found document.
    */
   async getOne (conditions, projection, options) {
-    return this.#model
+    return this._model
       .findOne(conditions, projection, options)
       .exec()
   }
@@ -103,7 +103,7 @@ export class MongooseRepositoryBase {
   async insert (insertData) {
     this.#ensureValidPropertyNames(insertData)
 
-    return this.#model.create(insertData)
+    return this._model.create(insertData)
   }
 
   /**
@@ -114,7 +114,7 @@ export class MongooseRepositoryBase {
    * @returns {Promise<object>} Promise resolved with the removed document.
    */
   async delete (id, options) {
-    return this.#model
+    return this._model
       .findByIdAndDelete(id, options)
       .exec()
   }
@@ -131,7 +131,7 @@ export class MongooseRepositoryBase {
   async update (id, updateData, options) {
     this.#ensureValidPropertyNames(updateData)
 
-    return this.#model
+    return this._model
       .findByIdAndUpdate(id, updateData, {
         ...options,
         new: true,
@@ -152,7 +152,7 @@ export class MongooseRepositoryBase {
   async replace (id, replaceData, options) {
     this.#ensureValidPropertyNames(replaceData)
 
-    return this.#model
+    return this._model
       .findOneAndReplace({ _id: id }, replaceData, {
         ...options,
         returnDocument: 'after',

@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "nodemon --inspect -r dotenv/config src/server.js",
     "lint": "npx eslint ./src || exit 0",
-    "lint:fix": "npx eslint ./src --fix || exit 0"  },
+    "lint:fix": "npx eslint ./src --fix || exit 0"
+  },
   "repository": {
     "type": "git",
     "url": "git@gitlab.lnu.se:1dv027/student/eh224kr/assignment-api-design.git"
@@ -20,6 +21,7 @@
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
     "validator": "^13.9.0"
