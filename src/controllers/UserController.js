@@ -36,19 +36,15 @@ export class UserController {
    */
   async loadUser (req, res, next, id) {
     try {
-      // Get the user.
       const user = await this.#service.getById(id)
 
-      // If no user found send a 404 (Not Found).
       if (!user) {
         next(createError(404, 'The requested resource was not found.'))
         return
       }
 
-      // Provide the user to req.
       req.requestedUser = user
 
-      // Next middleware.
       next()
     } catch (error) {
       next(error)
@@ -64,8 +60,6 @@ export class UserController {
    */
   async authenticateJWT (req, res, next) {
     try {
-      console.log("2");
-
       const [authenticationScheme, token] = req.headers.authorization?.split(' ')
       if (authenticationScheme !== 'Bearer') {
         throw new Error('Invalid authentication scheme')
@@ -89,6 +83,13 @@ export class UserController {
     }
   }
 
+  /**
+   * Authorizes the user, only if she/he is the owner of the resource.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
   authorizeUser (req, res, next) {
     if (req.authenticatedUser.id !== req.requestedUser.id) {
       next(createError(403, 'You do not have rights to this resource'))
@@ -110,56 +111,14 @@ export class UserController {
         email: req.body.email
       }
 
-      let user = await this.#service.insert(data)
-
-      const location = new URL(
-        `${req.protocol}://${req.get('host')}${req.baseUrl}/${user._id}`
-      )
-
-      user = user.toObject()
-      user.links = {
-        self: {
-          method: 'GET',
-          href: location
-        },
-        update: {
-          method: 'PATCH',
-          href: location
-        },
-        replace: {
-          method: 'PUT',
-          href: location
-        },
-        tours: {
-          method: 'GET',
-          href: `${location}/tour`
-        },
-        createTours: {
-          method: 'POST',
-          href: `${location}/tour`
-        }
-      }
+      const user = await this.#service.insert(data)
+      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const links = this.#getDocumentLinks(collectionURL, user.id)
 
       res
-        .location(location.href)
+        .location(`${collectionURL.href}/${user.id}`)
         .status(201)
-        .json({
-          user,
-          links: {
-            collection: {
-              method: 'GET',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}`
-            },
-            register: {
-              method: 'POST',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/register`
-            },
-            login: {
-              method: 'POST',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/login`
-            }
-          }
-        })
+        .json({ user, links })
     } catch (error) {
       let err = error
       if (error.code === 11000) {
@@ -181,70 +140,15 @@ export class UserController {
    */
   async login (req, res, next) {
     try {
-      let user = await this.#service.authenticate(req.body.username, req.body.password)
+      const user = await this.#service.authenticate(req.body.username, req.body.password)
 
-      const payload = {
-        sub: user.username,
-        email: user.email
-      }
+      const accessToken = this.#createAccessToken(user)
 
-      const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
+      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const links = this.#getLoginLinks(collectionURL, user.id)
 
-      // Create access token.
-      const accessToken = jwt.sign(payload, privateKey, {
-        algorithm: 'RS256',
-        expiresIn: process.env.ACCESS_TOKEN_LIFE
-      })
-
-      const location = new URL(
-        `${req.protocol}://${req.get('host')}${req.baseUrl}/${user._id}`
-      )
-
-      user = user.toObject()
-      user.links = {
-        self: {
-          method: 'GET',
-          href: location
-        },
-        update: {
-          method: 'PATCH',
-          href: location
-        },
-        replace: {
-          method: 'PUT',
-          href: location
-        },
-        tours: {
-          method: 'GET',
-          href: `${location}/tour`
-        },
-        createTours: {
-          method: 'POST',
-          href: `${location}/tour`
-        }
-      }
-
-      res
-        .json({
-          accessToken,
-          user,
-          links: {
-            collection: {
-              method: 'GET',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}`
-            },
-            register: {
-              method: 'POST',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/register`
-            },
-            login: {
-              method: 'POST',
-              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/login`
-            }
-          }
-        })
+      res.json({ accessToken, links })
     } catch (error) {
-      // Authentication failed.
       const err = createError(401, 'Credentials invalid or not provided')
       err.cause = error
 
@@ -260,7 +164,11 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    res.json(req.requestedUser)
+    const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+
+    const links = this.#getDocumentLinks(collectionURL, req.requestedUser.id)
+
+    res.json({ user: req.requestedUser, links })
   }
 
   /**
@@ -273,8 +181,13 @@ export class UserController {
   async findAll (req, res, next) {
     try {
       const users = await this.#service.get()
+      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const usersWithLinks = this.#populateWithSelfLink(users, collectionURL)
 
-      res.json(users)
+      res.json({
+        users: usersWithLinks,
+        links: this.#getCollectionLinks(collectionURL)
+      })
     } catch (error) {
       next(error)
     }
@@ -333,6 +246,121 @@ export class UserController {
       err.cause = error
 
       next(err)
+    }
+  }
+
+  #createAccessToken (user) {
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      email: user.email
+    }
+
+    const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
+
+    return jwt.sign(payload, privateKey, {
+      algorithm: 'RS256',
+      expiresIn: process.env.ACCESS_TOKEN_LIFE
+    })
+  }
+
+  #populateWithSelfLink (users, collectionURL) {
+    const usersWithLinks = []
+    for (const user of users) {
+      const userObject = user.toObject()
+      userObject.links = {
+        self: {
+          method: 'GET',
+          href: `${collectionURL}/${user.id}`
+        }
+      }
+      usersWithLinks.push(userObject)
+    }
+    return usersWithLinks
+  }
+
+  #getDocumentLinks (collectionURL, id) {
+    const documentURL = `${collectionURL}/${id}`
+    return {
+      self: {
+        method: 'GET',
+        href: documentURL
+      },
+      update: {
+        method: 'PATCH',
+        href: documentURL
+      },
+      replace: {
+        method: 'PUT',
+        href: documentURL
+      },
+      tours: {
+        method: 'GET',
+        href: `${documentURL}/tours`
+      },
+      createTours: {
+        method: 'POST',
+        href: `${documentURL}/tours`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      },
+      register: {
+        method: 'POST',
+        href: `${collectionURL}/register`
+      },
+      login: {
+        method: 'POST',
+        href: `${collectionURL}/login`
+      }
+    }
+  }
+
+  #getLoginLinks (collectionURL, id) {
+    return {
+      self: {
+        method: 'POST',
+        href: `${collectionURL}/login`
+      },
+      profile: {
+        method: 'GET',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      },
+      register: {
+        method: 'POST',
+        href: `${collectionURL}/register`
+      }
+    }
+  }
+
+  #getCollectionLinks (collectionURL) {
+    // TODO: Paginering! Next och prev!
+    return {
+      self: {
+        method: 'GET',
+        href: collectionURL
+      },
+      next: {
+        method: 'GET',
+        href: ''
+      },
+      prev: {
+        method: 'GET',
+        href: ''
+      },
+      login: {
+        method: 'POST',
+        href: `${collectionURL}/login`
+      },
+      register: {
+        method: 'POST',
+        href: `${collectionURL}/register`
+      }
     }
   }
 }
