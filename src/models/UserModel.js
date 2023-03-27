@@ -10,18 +10,6 @@ const { isEmail } = validator
 
 // Create a schema.
 const schema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'First name is required.'],
-    trim: true,
-    maxlength: 30
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required.'],
-    trim: true,
-    maxlength: 30
-  },
   email: {
     type: String,
     required: [true, 'Email address is required.'],
@@ -62,6 +50,9 @@ const convertOptions = {
    */
   transform: (doc, ret) => {
     delete ret._id
+    delete ret.createdAt
+    delete ret.updatedAt
+    delete ret.password
   }
 }
 

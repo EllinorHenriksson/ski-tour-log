@@ -37,26 +37,53 @@ export class UserController {
       const data = {
         username: req.body.username,
         password: req.body.password,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
         email: req.body.email
       }
 
-      const user = await this.#service.insert(data)
+      let user = await this.#service.insert(data)
 
       const location = new URL(
         `${req.protocol}://${req.get('host')}${req.baseUrl}/${user._id}`
       )
 
+      user = user.toObject()
+      user.links = {
+        self: {
+          method: 'GET',
+          href: location
+        },
+        update: {
+          method: 'PATCH',
+          href: location
+        },
+        replace: {
+          method: 'PUT',
+          href: location
+        },
+        tour: {
+          method: 'GET',
+          href: `${location}/tour`
+        }
+      }
+
       res
         .location(location.href)
         .status(201)
         .json({
-          ...user,
+          user,
           links: {
-            self: location,
-            tours: `${location}/tours`,
-            collection: `${req.protocol}://${req.get('host')}${req.baseUrl}`
+            collection: {
+              method: 'GET',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}`
+            },
+            register: {
+              method: 'POST',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/register`
+            },
+            login: {
+              method: 'POST',
+              href: `${req.protocol}://${req.get('host')}${req.baseUrl}/login`
+            }
           }
         })
     } catch (error) {
@@ -133,17 +160,6 @@ export class UserController {
     } catch (error) {
       next(error)
     }
-  }
-
-  /**
-   * Logs out the user.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   */
-  async logout (req, res, next) {
-    // TODO
   }
 
   /**
