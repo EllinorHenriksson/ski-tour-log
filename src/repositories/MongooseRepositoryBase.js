@@ -66,6 +66,10 @@ export class MongooseRepositoryBase {
       .exec()
   }
 
+  async getCount () {
+    return this._model.estimatedDocumentCount()
+  }
+
   /**
    * Gets a single document by its id.
    *

@@ -8,6 +8,7 @@ import { UserModel } from '../models/UserModel.js'
 import { UserRepository } from '../repositories/UserRepository.js'
 import { UserService } from '../services/UserService.js'
 import { LinkProvider } from '../util/LinkProvider.js'
+import { InputValidator } from '../util/InputValidator.js'
 import { UserController } from '../controllers/UserController.js'
 
 const iocContainer = new IoCContainer()
@@ -35,10 +36,16 @@ iocContainer.register('LinkProviderSingleton', LinkProvider, {
   singleton: true
 })
 
+iocContainer.register('InputValidatorSingleton', InputValidator, {
+  dependencies: null,
+  singleton: true
+})
+
 iocContainer.register('UserController', UserController, {
   dependencies: [
     'UserServiceSingleton',
-    'LinkProviderSingleton'
+    'LinkProviderSingleton',
+    'InputValidatorSingleton'
   ]
 })
 

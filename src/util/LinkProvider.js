@@ -2,7 +2,7 @@
  * Encapsulates a link provider.
  */
 export class LinkProvider {
-  populateWithSelfLink (users, collectionURL) {
+  populateWithSelfLinks (users, collectionURL) {
     const usersWithLinks = []
     for (const user of users) {
       const userObject = user.toObject()
@@ -76,20 +76,13 @@ export class LinkProvider {
     }
   }
 
-  getCollectionLinks (collectionURL) {
-    // TODO: Paginering! Next och prev!
-    return {
+  getCollectionLinks (collectionURL, pageInfo) {
+    const { pageSize, pageStartIndex, count } = pageInfo
+
+    const links = {
       self: {
         method: 'GET',
         href: collectionURL
-      },
-      next: {
-        method: 'GET',
-        href: ''
-      },
-      prev: {
-        method: 'GET',
-        href: ''
       },
       login: {
         method: 'POST',
@@ -100,5 +93,21 @@ export class LinkProvider {
         href: `${collectionURL}/register`
       }
     }
+
+    if (pageStartIndex - pageSize >= 0) {
+      links.prev = {
+        method: 'GET',
+        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex - pageSize}`
+      }
+    }
+
+    if (pageStartIndex + pageSize < count) {
+      links.next = {
+        method: 'GET',
+        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
+      }
+    }
+
+    return links
   }
 }

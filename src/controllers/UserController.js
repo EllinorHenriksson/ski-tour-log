@@ -4,8 +4,8 @@
 
 import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
+import { InputValidator } from '../util/InputValidator.js'
 import { LinkProvider } from '../util/LinkProvider.js'
-import jwt from 'jsonwebtoken'
 
 /**
  * Encapsulates a controller.
@@ -26,14 +26,23 @@ export class UserController {
   #linkProvider
 
   /**
+   * An input validator.
+   *
+   * @type {InputValidator}
+   */
+  #inputValidator
+
+  /**
    * Initializes a new instance.
    *
    * @param {UserService} service - A service instantiated from a class with the same capabilities as UserService.
    * @param {LinkProvider} linkProvider - A link provider.
+   * @param {InputValidator} inputValidator - An input validator.
    */
-  constructor (service, linkProvider) {
+  constructor (service, linkProvider, inputValidator) {
     this.#service = service
     this.#linkProvider = linkProvider
+    this.#inputValidator = inputValidator
   }
 
   /**
@@ -147,12 +156,12 @@ export class UserController {
     try {
       const user = await this.#service.authenticate(req.body.username, req.body.password)
 
-      const accessToken = this.#createAccessToken(user)
+      const jwt = this.#service.createJWT(user)
 
       const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
       const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
-      res.json({ accessToken, links })
+      res.json({ jwt, links })
     } catch (error) {
       const err = createError(401, 'Credentials invalid or not provided')
       err.cause = error
@@ -185,13 +194,30 @@ export class UserController {
    */
   async findAll (req, res, next) {
     try {
-      const users = await this.#service.get()
+      let pageSize = 10
+      let pageStartIndex = 0
+
+      if (req.query.pageSize) {
+        this.#inputValidator.validatePageSize(req.query.pageSize)
+        pageSize = parseInt(req.query.pageSize)
+      }
+
+      if (req.query.pageStartIndex) {
+        this.#inputValidator.validatePageStartIndex(req.query.pageStartIndex)
+        pageStartIndex = parseInt(req.query.pageStartIndex)
+      }
+
+      const users = await this.#service.get(null, null, { limit: pageSize, skip: pageStartIndex })
+
+      const count = await this.#service.getCount()
+
       const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
-      const usersWithLinks = this.#linkProvider.populateWithSelfLink(users, collectionURL)
+
+      const usersWithLinks = this.#linkProvider.populateWithSelfLinks(users, collectionURL)
 
       res.json({
         users: usersWithLinks,
-        links: this.#linkProvider.getCollectionLinks(collectionURL)
+        links: this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count })
       })
     } catch (error) {
       next(error)
@@ -206,6 +232,7 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async partiallyUpdate (req, res, next) {
+    // TODO
     try {
       const partialTask = {}
       if ('description' in req.body) partialTask.description = req.body.description
@@ -252,20 +279,5 @@ export class UserController {
 
       next(err)
     }
-  }
-
-  #createAccessToken (user) {
-    const payload = {
-      sub: user.id,
-      username: user.username,
-      email: user.email
-    }
-
-    const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
-
-    return jwt.sign(payload, privateKey, {
-      algorithm: 'RS256',
-      expiresIn: process.env.ACCESS_TOKEN_LIFE
-    })
   }
 }

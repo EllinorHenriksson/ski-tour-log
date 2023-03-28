@@ -27,10 +27,17 @@ export class MongooseServiceBase {
   /**
    * Gets all documents.
    *
-   * @returns {Promise<object>} Promise resolved with all documents.
+   * @param {object} filter - Filter to apply to the query.
+   * @param {object|string|string[]} [projection] - Fields to return.
+   * @param {object} [options] - See Query.prototype.setOptions().
+   * @returns {Promise<object[]>} Promise resolved with the found documents.
    */
-  async get () {
-    return this._repository.get()
+  async get (filter, projection = null, options = null) {
+    return this._repository.get(filter, projection, options)
+  }
+
+  async getCount () {
+    return this._repository.getCount()
   }
 
   /**
