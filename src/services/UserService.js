@@ -4,6 +4,7 @@
 
 import { MongooseServiceBase } from './MongooseServiceBase.js'
 import { UserRepository } from '../repositories/UserRepository.js'
+import jwt from 'jsonwebtoken'
 
 /**
  * Encapsulates a user service.
@@ -20,5 +21,23 @@ export class UserService extends MongooseServiceBase {
 
   async authenticate (username, password) {
     return this._repository.authenticate(username, password)
+  }
+
+  async authenticateJWT (authHeader) {
+    if (!authHeader) {
+      throw new Error('No authorizaton header')
+    }
+
+    const [authenticationScheme, token] = authHeader.split(' ')
+
+    if (authenticationScheme !== 'Bearer') {
+      throw new Error('Invalid authentication scheme')
+    }
+
+    const publicKey = Buffer.from(process.env.PUBLIC_KEY, 'base64')
+
+    const payload = jwt.verify(token, publicKey)
+
+    return this.getById(payload.sub)
   }
 }

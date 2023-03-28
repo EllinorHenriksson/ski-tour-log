@@ -7,6 +7,7 @@ import { IoCContainer } from '../util/IoCContainer.js'
 import { UserModel } from '../models/UserModel.js'
 import { UserRepository } from '../repositories/UserRepository.js'
 import { UserService } from '../services/UserService.js'
+import { LinkProvider } from '../util/LinkProvider.js'
 import { UserController } from '../controllers/UserController.js'
 
 const iocContainer = new IoCContainer()
@@ -29,9 +30,15 @@ iocContainer.register('UserServiceSingleton', UserService, {
   singleton: true
 })
 
+iocContainer.register('LinkProviderSingleton', LinkProvider, {
+  dependencies: null,
+  singleton: true
+})
+
 iocContainer.register('UserController', UserController, {
   dependencies: [
-    'UserServiceSingleton'
+    'UserServiceSingleton',
+    'LinkProviderSingleton'
   ]
 })
 

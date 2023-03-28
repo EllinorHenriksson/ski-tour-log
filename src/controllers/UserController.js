@@ -4,6 +4,7 @@
 
 import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
+import { LinkProvider } from '../util/LinkProvider.js'
 import jwt from 'jsonwebtoken'
 
 /**
@@ -18,12 +19,21 @@ export class UserController {
   #service
 
   /**
+   * A link provider.
+   *
+   * @type {LinkProvider}
+   */
+  #linkProvider
+
+  /**
    * Initializes a new instance.
    *
    * @param {UserService} service - A service instantiated from a class with the same capabilities as UserService.
+   * @param {LinkProvider} linkProvider - A link provider.
    */
-  constructor (service) {
+  constructor (service, linkProvider) {
     this.#service = service
+    this.#linkProvider = linkProvider
   }
 
   /**
@@ -60,20 +70,13 @@ export class UserController {
    */
   async authenticateJWT (req, res, next) {
     try {
-      const [authenticationScheme, token] = req.headers.authorization?.split(' ')
-      if (authenticationScheme !== 'Bearer') {
-        throw new Error('Invalid authentication scheme')
+      const user = await this.#service.authenticateJWT(req.headers.authorization)
+
+      if (!user) {
+        throw new Error('User is not in database')
       }
 
-      const publicKey = Buffer.from(process.env.PUBLIC_KEY, 'base64')
-
-      const payload = jwt.verify(token, publicKey)
-
-      req.authenticatedUser = await this.#service.getById(payload.sub)
-
-      if (!req.authenticatedUser) {
-        throw new Error('User not in database')
-      }
+      req.authenticatedUser = user
 
       next()
     } catch (err) {
@@ -112,8 +115,10 @@ export class UserController {
       }
 
       const user = await this.#service.insert(data)
+
       const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
-      const links = this.#getDocumentLinks(collectionURL, user.id)
+
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
 
       res
         .location(`${collectionURL.href}/${user.id}`)
@@ -145,7 +150,7 @@ export class UserController {
       const accessToken = this.#createAccessToken(user)
 
       const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
-      const links = this.#getLoginLinks(collectionURL, user.id)
+      const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
       res.json({ accessToken, links })
     } catch (error) {
@@ -166,7 +171,7 @@ export class UserController {
   async find (req, res, next) {
     const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
 
-    const links = this.#getDocumentLinks(collectionURL, req.requestedUser.id)
+    const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedUser.id)
 
     res.json({ user: req.requestedUser, links })
   }
@@ -182,11 +187,11 @@ export class UserController {
     try {
       const users = await this.#service.get()
       const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
-      const usersWithLinks = this.#populateWithSelfLink(users, collectionURL)
+      const usersWithLinks = this.#linkProvider.populateWithSelfLink(users, collectionURL)
 
       res.json({
         users: usersWithLinks,
-        links: this.#getCollectionLinks(collectionURL)
+        links: this.#linkProvider.getCollectionLinks(collectionURL)
       })
     } catch (error) {
       next(error)
@@ -262,105 +267,5 @@ export class UserController {
       algorithm: 'RS256',
       expiresIn: process.env.ACCESS_TOKEN_LIFE
     })
-  }
-
-  #populateWithSelfLink (users, collectionURL) {
-    const usersWithLinks = []
-    for (const user of users) {
-      const userObject = user.toObject()
-      userObject.links = {
-        self: {
-          method: 'GET',
-          href: `${collectionURL}/${user.id}`
-        }
-      }
-      usersWithLinks.push(userObject)
-    }
-    return usersWithLinks
-  }
-
-  #getDocumentLinks (collectionURL, id) {
-    const documentURL = `${collectionURL}/${id}`
-    return {
-      self: {
-        method: 'GET',
-        href: documentURL
-      },
-      update: {
-        method: 'PATCH',
-        href: documentURL
-      },
-      replace: {
-        method: 'PUT',
-        href: documentURL
-      },
-      tours: {
-        method: 'GET',
-        href: `${documentURL}/tours`
-      },
-      createTours: {
-        method: 'POST',
-        href: `${documentURL}/tours`
-      },
-      collection: {
-        method: 'GET',
-        href: collectionURL
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
-      },
-      login: {
-        method: 'POST',
-        href: `${collectionURL}/login`
-      }
-    }
-  }
-
-  #getLoginLinks (collectionURL, id) {
-    return {
-      self: {
-        method: 'POST',
-        href: `${collectionURL}/login`
-      },
-      profile: {
-        method: 'GET',
-        href: `${collectionURL}/${id}`
-      },
-      collection: {
-        method: 'GET',
-        href: collectionURL
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
-      }
-    }
-  }
-
-  #getCollectionLinks (collectionURL) {
-    // TODO: Paginering! Next och prev!
-    return {
-      self: {
-        method: 'GET',
-        href: collectionURL
-      },
-      next: {
-        method: 'GET',
-        href: ''
-      },
-      prev: {
-        method: 'GET',
-        href: ''
-      },
-      login: {
-        method: 'POST',
-        href: `${collectionURL}/login`
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
-      }
-    }
   }
 }
