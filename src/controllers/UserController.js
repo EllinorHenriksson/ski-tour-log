@@ -244,18 +244,19 @@ export class UserController {
       res
         .json({ data: user, links })
     } catch (error) {
-      const err = createError(error.name === 'ValidationError'
-        ? 400
-        : 500
-      )
-      err.cause = error
+      let err = error
+      if (error.code === 11000) {
+        err = createError(409, 'Username and/or email address already registered')
+      } else if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
 
       next(err)
     }
   }
 
   /**
-   * Completely updates a specific task.
+   * Completely updates a specific user.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
