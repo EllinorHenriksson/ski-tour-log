@@ -37,22 +37,4 @@ export class UserService extends MongooseServiceBase {
       expiresIn: process.env.ACCESS_TOKEN_LIFE
     })
   }
-
-  async authenticateJWT (authHeader) {
-    if (!authHeader) {
-      throw new Error('No authorizaton header')
-    }
-
-    const [authenticationScheme, token] = authHeader.split(' ')
-
-    if (authenticationScheme !== 'Bearer') {
-      throw new Error('Invalid authentication scheme')
-    }
-
-    const publicKey = Buffer.from(process.env.PUBLIC_KEY, 'base64')
-
-    const payload = jwt.verify(token, publicKey)
-
-    return this.getById(payload.sub)
-  }
 }

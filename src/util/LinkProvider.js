@@ -5,11 +5,6 @@ export class LinkProvider {
   getRegisterLinks (collectionURL, id) {
     const links = this.getDocumentLinks(collectionURL, id)
 
-    links.register = {
-      method: 'POST',
-      href: `${collectionURL}/register`
-    }
-
     links.login = {
       method: 'POST',
       href: `${collectionURL}/login`
@@ -18,55 +13,41 @@ export class LinkProvider {
     return links
   }
 
-  getDocumentLinks (collectionURL, id) {
+  getDocumentLinks (collectionURL, id, authorized) {
     const documentURL = `${collectionURL}/${id}`
-    return {
+    const links = {
       self: {
         method: 'GET',
-        href: documentURL
-      },
-      update: {
-        method: 'PATCH',
-        href: documentURL
-      },
-      replace: {
-        method: 'PUT',
         href: documentURL
       },
       tours: {
         method: 'GET',
         href: `${documentURL}/tours`
       },
-      createTours: {
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+
+    if (authorized) {
+      links.update = {
+        method: 'PATCH',
+        href: documentURL
+      }
+
+      links.replace = {
+        method: 'PUT',
+        href: documentURL
+      }
+
+      links.createTours = {
         method: 'POST',
         href: `${documentURL}/tours`
-      },
-      collection: {
-        method: 'GET',
-        href: collectionURL
       }
     }
-  }
 
-  getLoginLinks (collectionURL, id) {
-    return {
-      self: {
-        method: 'POST',
-        href: `${collectionURL}/login`
-      },
-      profile: {
-        method: 'GET',
-        href: `${collectionURL}/${id}`
-      },
-      collection: {
-        method: 'GET',
-        href: collectionURL
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
-      }
-    }
+    return links
   }
 
   getCollectionLinks (collectionURL, pageInfo) {
@@ -91,16 +72,6 @@ export class LinkProvider {
         method: 'GET',
         href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
       }
-    }
-
-    links.login = {
-      method: 'POST',
-      href: `${collectionURL}/login`
-    }
-
-    links.register = {
-      method: 'POST',
-      href: `${collectionURL}/register`
     }
 
     return links

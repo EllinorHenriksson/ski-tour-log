@@ -4,7 +4,7 @@
 
 import express from 'express'
 import createError from 'http-errors'
-import { router as v1Router } from './api/v1/router.js'
+import { router as v1Router } from './api/v1/homeRouter.js'
 
 export const router = express.Router()
 

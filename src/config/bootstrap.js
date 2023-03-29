@@ -10,6 +10,8 @@ import { UserService } from '../services/UserService.js'
 import { LinkProvider } from '../util/LinkProvider.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { UserController } from '../controllers/UserController.js'
+import { HomeController } from '../controllers/HomeController.js'
+import { AuthTool } from '../util/AuthTool.js'
 
 const iocContainer = new IoCContainer()
 
@@ -47,6 +49,14 @@ iocContainer.register('UserController', UserController, {
     'LinkProviderSingleton',
     'InputValidatorSingleton'
   ]
+})
+
+iocContainer.register('HomeController', HomeController, {
+  dependencies: null
+})
+
+iocContainer.register('AuthTool', AuthTool, {
+  dependencies: null
 })
 
 export const container = Object.freeze(iocContainer)

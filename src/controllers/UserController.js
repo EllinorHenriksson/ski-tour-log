@@ -71,46 +71,6 @@ export class UserController {
   }
 
   /**
-   * Authenticates requests and populates req.authenticatedUser with the user resource object.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   */
-  async authenticateJWT (req, res, next) {
-    try {
-      const user = await this.#service.authenticateJWT(req.headers.authorization)
-
-      if (!user) {
-        throw new Error('User is not in database')
-      }
-
-      req.authenticatedUser = user
-
-      next()
-    } catch (err) {
-      const error = createError(401, 'JWT invalid or not provided')
-      error.cause = err
-      next(error)
-    }
-  }
-
-  /**
-   * Authorizes the user, only if she/he is the owner of the resource.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   */
-  authorizeUser (req, res, next) {
-    if (req.authenticatedUser.id !== req.requestedUser.id) {
-      next(createError(403, 'You do not have rights to this resource'))
-    }
-
-    next()
-  }
-
-  /**
    * Registers a user.
    *
    * @param {object} req - Express request object.
@@ -161,7 +121,7 @@ export class UserController {
       const jwt = this.#service.createJWT(user)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
 
       res.json({ jwt, links })
     } catch (error) {
@@ -182,7 +142,7 @@ export class UserController {
   async find (req, res, next) {
     const collectionURL = this.#getCollectionURL(req)
 
-    const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedUser.id)
+    const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedUser.id, req.authenticatedUser?.sub === req.requestedUser.id)
 
     res.json({ data: req.requestedUser, links })
   }
@@ -239,7 +199,7 @@ export class UserController {
       const user = await this.#service.update(req.requestedUser.id, partialUser)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
 
       res
         .json({ data: user, links })
@@ -269,7 +229,7 @@ export class UserController {
       const user = await this.#service.replace(req.requestedUser.id, { username, email, password })
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
 
       res.json({ data: user, links })
     } catch (error) {
