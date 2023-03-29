@@ -33,6 +33,7 @@ router.get('/',
   (req, res, next) => resolveTourController(req).findAll(req, res, next)
 )
 
+// TODO: Lägg in authentisering och auktorisering
 router.post('/', (req, res, next) => resolveTourController(req).create(req, res, next))
 
 router.get('/:id',

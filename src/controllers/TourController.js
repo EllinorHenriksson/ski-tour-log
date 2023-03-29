@@ -44,4 +44,49 @@ export class TourController {
     this.#linkProvider = linkProvider
     this.#inputValidator = inputValidator
   }
+
+  /**
+   * Creates a tour.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async create (req, res, next) {
+    try {
+      const data = {
+        date: req.body.date,
+        duration: req.body.duration,
+        distance: req.body.distance,
+        temperature: req.body.temperature,
+        wax: req.body.wax,
+        glide: req.body.glide,
+        grip: req.body.grip,
+        description: req.body.description,
+        skier: req.requestedUser.id
+      }
+
+      const tour = await this.#service.insert(data)
+
+      const collectionURL = this.#getCollectionURL(req)
+
+      const links = this.#linkProvider.getDocumentLinksTour(collectionURL, tour.id, true)
+
+      res
+        .location(`${collectionURL.href}/${tour.id}`)
+        .status(201)
+        .json({ data: tour, links })
+    } catch (error) {
+      let err = error
+      if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
+
+      next(err)
+    }
+  }
+
+  #getCollectionURL (req) {
+    return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+  }
 }

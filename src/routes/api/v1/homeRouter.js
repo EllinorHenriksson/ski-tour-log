@@ -17,4 +17,4 @@ const resolveHomeController = (req) => req.app.get('container').resolve('HomeCon
 
 router.get('/', (req, res, next) => resolveHomeController(req).index(req, res, next))
 
-router.use('/users', userRouter)
+router.use('/user', userRouter)

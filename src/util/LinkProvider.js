@@ -22,7 +22,7 @@ export class LinkProvider {
       },
       tours: {
         method: 'GET',
-        href: `${documentURL}/tours`
+        href: `${documentURL}/tour`
       },
       collection: {
         method: 'GET',
@@ -39,11 +39,6 @@ export class LinkProvider {
       links.replace = {
         method: 'PUT',
         href: documentURL
-      }
-
-      links.createTours = {
-        method: 'POST',
-        href: `${documentURL}/tours`
       }
     }
 
@@ -71,6 +66,73 @@ export class LinkProvider {
       links.next = {
         method: 'GET',
         href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
+      }
+    }
+
+    return links
+  }
+
+  getDocumentLinksTour (collectionURL, tourId, authorized) {
+    const documentURL = `${collectionURL}/${tourId}`
+    const links = {
+      self: {
+        method: 'GET',
+        href: documentURL
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+
+    if (authorized) {
+      links.update = {
+        method: 'PATCH',
+        href: documentURL
+      }
+
+      links.replace = {
+        method: 'PUT',
+        href: documentURL
+      }
+
+      links.delete = {
+        method: 'DELETE',
+        href: documentURL
+      }
+    }
+
+    return links
+  }
+
+  getCollectionLinksTours (collectionURL, pageInfo, authorized) {
+    const { pageSize, pageStartIndex, count } = pageInfo
+
+    const links = {
+      self: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+
+    if (pageStartIndex - pageSize >= 0) {
+      links.prev = {
+        method: 'GET',
+        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex - pageSize}`
+      }
+    }
+
+    if (pageStartIndex + pageSize < count) {
+      links.next = {
+        method: 'GET',
+        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
+      }
+    }
+
+    if (authorized) {
+      links.create = {
+        method: 'POST',
+        href: collectionURL
       }
     }
 

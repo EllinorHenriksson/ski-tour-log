@@ -9,15 +9,15 @@ const schema = new mongoose.Schema({
   date: {
     type: Date
   },
-  durationMin: {
+  duration: {
     type: Number,
     min: [0, 'The duration (min) must be a positive number or 0']
   },
-  distanceMeter: {
+  distance: {
     type: Number,
     min: [0, 'The distance (m) must be a positive number or 0']
   },
-  temperatureCelcius: {
+  temperature: {
     type: Number
   },
   wax: {
@@ -35,6 +35,11 @@ const schema = new mongoose.Schema({
   description: {
     type: String,
     maxLength: [500, 'Decsription must not contain more than 500 characters']
+  },
+  skier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Skier is required']
   }
 })
 

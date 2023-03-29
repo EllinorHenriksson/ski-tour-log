@@ -56,4 +56,4 @@ router.put('/:id',
 )
 
 // Forward routing
-router.use('/:id/tours', tourRouter)
+router.use('/:id/tour', tourRouter)
