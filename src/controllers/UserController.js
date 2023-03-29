@@ -236,10 +236,10 @@ export class UserController {
       if ('email' in req.body) partialUser.email = req.body.email
       if ('password' in req.body) partialUser.password = req.body.password
 
-      const user = await this.#service.update(req.params.id, partialUser)
+      const user = await this.#service.update(req.requestedUser.id, partialUser)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, req.params.id)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
 
       res
         .json({ data: user, links })
@@ -264,19 +264,21 @@ export class UserController {
    */
   async update (req, res, next) {
     try {
-      const { description, done } = req.body
+      const { username, email, password } = req.body
 
-      await this.#service.replace(req.params.id, { description, done })
+      const user = await this.#service.replace(req.requestedUser.id, { username, email, password })
 
-      res
-        .status(204)
-        .end()
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
+
+      res.json({ data: user, links })
     } catch (error) {
-      const err = createError(error.name === 'ValidationError'
-        ? 400 // bad format
-        : 500 // something went really wrong
-      )
-      err.cause = error
+      let err = error
+      if (error.code === 11000) {
+        err = createError(409, 'Username and/or email address already registered')
+      } else if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
 
       next(err)
     }
