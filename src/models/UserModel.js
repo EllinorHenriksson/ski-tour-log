@@ -23,7 +23,7 @@ const schema = new mongoose.Schema({
     required: [true, 'Username is required.'],
     unique: true,
     // A valid username should start with an alphabet, all other characters can be alphabets, numbers or an underscore.
-    match: [/^[A-Za-z][A-Za-z0-9_-]{2,255}$/, 'Please provide a valid username.']
+    match: [/^[A-Za-z][A-Za-z0-9_-]{2,255}$/, 'Please provide a valid username (consisting of letters, numbers or underscores, starting with a letter).']
   },
   password: {
     type: String,

@@ -106,6 +106,8 @@ export class UserController {
     if (req.authenticatedUser.id !== req.requestedUser.id) {
       next(createError(403, 'You do not have rights to this resource'))
     }
+
+    next()
   }
 
   /**
@@ -125,14 +127,14 @@ export class UserController {
 
       const user = await this.#service.insert(data)
 
-      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const collectionURL = this.#getCollectionURL(req)
 
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id)
+      const links = this.#linkProvider.getRegisterLinks(collectionURL, user.id)
 
       res
         .location(`${collectionURL.href}/${user.id}`)
         .status(201)
-        .json({ user, links })
+        .json({ data: user, links })
     } catch (error) {
       let err = error
       if (error.code === 11000) {
@@ -158,7 +160,7 @@ export class UserController {
 
       const jwt = this.#service.createJWT(user)
 
-      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const collectionURL = this.#getCollectionURL(req)
       const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
       res.json({ jwt, links })
@@ -178,11 +180,11 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+    const collectionURL = this.#getCollectionURL(req)
 
     const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedUser.id)
 
-    res.json({ user: req.requestedUser, links })
+    res.json({ data: req.requestedUser, links })
   }
 
   /**
@@ -211,42 +213,40 @@ export class UserController {
 
       const count = await this.#service.getCount()
 
-      const collectionURL = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count })
 
-      const usersWithLinks = this.#linkProvider.populateWithSelfLinks(users, collectionURL)
-
-      res.json({
-        users: usersWithLinks,
-        links: this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count })
-      })
+      res.json({ data: users, links })
     } catch (error) {
       next(error)
     }
   }
 
   /**
-   * Partially updates a specific task.
+   * Partially updates a specific user.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
   async partiallyUpdate (req, res, next) {
-    // TODO
     try {
-      const partialTask = {}
-      if ('description' in req.body) partialTask.description = req.body.description
-      if ('done' in req.body) partialTask.done = req.body.done
+      const partialUser = {}
+      if ('username' in req.body) partialUser.username = req.body.username
+      if ('email' in req.body) partialUser.email = req.body.email
+      if ('password' in req.body) partialUser.password = req.body.password
 
-      await this.#service.update(req.params.id, partialTask)
+      const user = await this.#service.update(req.params.id, partialUser)
+
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, req.params.id)
 
       res
-        .status(204)
-        .end()
+        .json({ data: user, links })
     } catch (error) {
       const err = createError(error.name === 'ValidationError'
-        ? 400 // bad format
-        : 500 // something went really wrong
+        ? 400
+        : 500
       )
       err.cause = error
 
@@ -279,5 +279,9 @@ export class UserController {
 
       next(err)
     }
+  }
+
+  #getCollectionURL (req) {
+    return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
   }
 }

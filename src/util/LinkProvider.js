@@ -2,19 +2,20 @@
  * Encapsulates a link provider.
  */
 export class LinkProvider {
-  populateWithSelfLinks (users, collectionURL) {
-    const usersWithLinks = []
-    for (const user of users) {
-      const userObject = user.toObject()
-      userObject.links = {
-        self: {
-          method: 'GET',
-          href: `${collectionURL}/${user.id}`
-        }
-      }
-      usersWithLinks.push(userObject)
+  getRegisterLinks (collectionURL, id) {
+    const links = this.getDocumentLinks(collectionURL, id)
+
+    links.register = {
+      method: 'POST',
+      href: `${collectionURL}/register`
     }
-    return usersWithLinks
+
+    links.login = {
+      method: 'POST',
+      href: `${collectionURL}/login`
+    }
+
+    return links
   }
 
   getDocumentLinks (collectionURL, id) {
@@ -43,14 +44,6 @@ export class LinkProvider {
       collection: {
         method: 'GET',
         href: collectionURL
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
-      },
-      login: {
-        method: 'POST',
-        href: `${collectionURL}/login`
       }
     }
   }
@@ -83,14 +76,6 @@ export class LinkProvider {
       self: {
         method: 'GET',
         href: collectionURL
-      },
-      login: {
-        method: 'POST',
-        href: `${collectionURL}/login`
-      },
-      register: {
-        method: 'POST',
-        href: `${collectionURL}/register`
       }
     }
 
@@ -106,6 +91,16 @@ export class LinkProvider {
         method: 'GET',
         href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
       }
+    }
+
+    links.login = {
+      method: 'POST',
+      href: `${collectionURL}/login`
+    }
+
+    links.register = {
+      method: 'POST',
+      href: `${collectionURL}/register`
     }
 
     return links
