@@ -4,20 +4,9 @@
 
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import validator from 'validator'
-
-const { isEmail } = validator
 
 // Create a schema.
 const schema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: [true, 'Email address is required.'],
-    unique: true,
-    lowercase: true,
-    trim: true,
-    validate: [isEmail, 'Please provide a valid email address.']
-  },
   username: {
     type: String,
     required: [true, 'Username is required.'],
@@ -31,8 +20,6 @@ const schema = new mongoose.Schema({
     maxLength: [256, 'The password must be of maximum length 256 characters.'],
     required: [true, 'Password is required.']
   }
-}, {
-  timestamps: true
 })
 
 schema.virtual('id').get(function () {

@@ -25,6 +25,6 @@ export class HomeController {
       }
     }
 
-    res.json({ name: 'Ski Tour API', version: 1, links })
+    res.json({ name: 'Ski Tour Log', version: 1, links })
   }
 }

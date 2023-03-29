@@ -81,8 +81,7 @@ export class UserController {
     try {
       const data = {
         username: req.body.username,
-        password: req.body.password,
-        email: req.body.email
+        password: req.body.password
       }
 
       const user = await this.#service.insert(data)
@@ -98,7 +97,7 @@ export class UserController {
     } catch (error) {
       let err = error
       if (error.code === 11000) {
-        err = createError(409, 'Username and/or email address already registered')
+        err = createError(409, 'Username already registered')
       } else if (error.name === 'ValidationError') {
         err = createError(400, error.message)
       }
@@ -193,7 +192,6 @@ export class UserController {
     try {
       const partialUser = {}
       if ('username' in req.body) partialUser.username = req.body.username
-      if ('email' in req.body) partialUser.email = req.body.email
       if ('password' in req.body) partialUser.password = req.body.password
 
       const user = await this.#service.update(req.requestedUser.id, partialUser)
@@ -206,7 +204,7 @@ export class UserController {
     } catch (error) {
       let err = error
       if (error.code === 11000) {
-        err = createError(409, 'Username and/or email address already registered')
+        err = createError(409, 'Username already registered')
       } else if (error.name === 'ValidationError') {
         err = createError(400, error.message)
       }
@@ -224,9 +222,9 @@ export class UserController {
    */
   async update (req, res, next) {
     try {
-      const { username, email, password } = req.body
+      const { username, password } = req.body
 
-      const user = await this.#service.replace(req.requestedUser.id, { username, email, password })
+      const user = await this.#service.replace(req.requestedUser.id, { username, password })
 
       const collectionURL = this.#getCollectionURL(req)
       const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
@@ -235,7 +233,7 @@ export class UserController {
     } catch (error) {
       let err = error
       if (error.code === 11000) {
-        err = createError(409, 'Username and/or email address already registered')
+        err = createError(409, 'Username already registered')
       } else if (error.name === 'ValidationError') {
         err = createError(400, error.message)
       }

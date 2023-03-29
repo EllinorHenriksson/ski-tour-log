@@ -26,8 +26,7 @@ export class UserService extends MongooseServiceBase {
   createJWT (user) {
     const payload = {
       sub: user.id,
-      username: user.username,
-      email: user.email
+      username: user.username
     }
 
     const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
