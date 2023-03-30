@@ -106,7 +106,7 @@ export class TourController {
         pageStartIndex = parseInt(req.query.pageStartIndex)
       }
 
-      const tours = await this.#service.get(null, null, { limit: pageSize, skip: pageStartIndex })
+      const tours = await this.#service.get({ skier: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
 
       const count = await this.#service.getCount()
 
@@ -149,6 +149,43 @@ export class TourController {
       res
         .location(`${collectionURL.href}/${tour.id}`)
         .status(201)
+        .json({ data: tour, links })
+    } catch (error) {
+      let err = error
+      if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
+
+      next(err)
+    }
+  }
+
+  /**
+   * Partially updates a specific tour.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async partiallyUpdate (req, res, next) {
+    try {
+      const partialTour = {}
+      if ('date' in req.body) partialTour.date = req.body.date
+      if ('duration' in req.body) partialTour.duration = req.body.duration
+      if ('distance' in req.body) partialTour.distance = req.body.distance
+      if ('temperature' in req.body) partialTour.temperature = req.body.temperature
+      if ('wax' in req.body) partialTour.wax = req.body.wax
+      if ('glide' in req.body) partialTour.glide = req.body.glide
+      if ('grip' in req.body) partialTour.grip = req.body.grip
+      if ('description' in req.body) partialTour.description = req.body.description
+      if ('skier' in req.body) partialTour.skier = req.body.skier
+
+      const tour = await this.#service.update(req.requestedTour.id, partialTour)
+
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, tour.id, true)
+
+      res
         .json({ data: tour, links })
     } catch (error) {
       let err = error
