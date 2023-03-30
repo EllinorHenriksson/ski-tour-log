@@ -79,9 +79,13 @@ export class TourController {
   async find (req, res, next) {
     const collectionURL = this.#getCollectionURL(req)
 
-    const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedTour.id, req.authenticatedUser?.sub === req.requestedUser.id)
-
-    res.json({ data: req.requestedTour, links })
+    res.json({
+      tour: {
+        data: req.requestedTour,
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedTour.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+      },
+      links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser)
+    })
   }
 
   /**
@@ -109,11 +113,12 @@ export class TourController {
       const tours = await this.#service.get({ skier: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
 
       const count = await this.#service.getCount()
-
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count }, req.authenticatedUser?.sub === req.requestedUser.id)
 
-      res.json({ data: tours, links })
+      res.json({
+        tours: this.#linkProvider.populateWithLinks(tours, collectionURL),
+        links: this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count }, req.authenticatedUser?.sub === req.requestedUser.id)
+      })
     } catch (error) {
       next(error)
     }
@@ -141,15 +146,18 @@ export class TourController {
       }
 
       const tour = await this.#service.insert(data)
-
       const collectionURL = this.#getCollectionURL(req)
-
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, tour.id, true)
 
       res
         .location(`${collectionURL.href}/${tour.id}`)
         .status(201)
-        .json({ data: tour, links })
+        .json({
+          tour: {
+            data: tour,
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+          },
+          links: this.#linkProvider.getCreateLinks(collectionURL)
+        })
     } catch (error) {
       let err = error
       if (error.name === 'ValidationError') {
@@ -180,12 +188,15 @@ export class TourController {
       if ('description' in req.body) partialTour.description = req.body.description
 
       const tour = await this.#service.update(req.requestedTour.id, partialTour)
-
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, tour.id, true)
 
-      res
-        .json({ data: tour, links })
+      res.json({
+        tour: {
+          data: tour,
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+        },
+        links: this.#linkProvider.getPatchLinks(collectionURL, tour.id)
+      })
     } catch (error) {
       let err = error
       if (error.name === 'ValidationError') {
@@ -210,9 +221,14 @@ export class TourController {
       const tour = await this.#service.replace(req.requestedTour.id, { date, duration, distance, temperature, wax, glide, grip, description, skier: req.requestedUser.id })
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, tour.id, true)
 
-      res.json({ data: tour, links })
+      res.json({
+        tour: {
+          data: tour,
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+        },
+        links: this.#linkProvider.getPutLinks(collectionURL, tour.id)
+      })
     } catch (error) {
       let err = error
       if (error.name === 'ValidationError') {
@@ -235,7 +251,7 @@ export class TourController {
       await this.#service.delete(req.requestedTour.id)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id, true)
+      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id)
 
       res.json({ links })
     } catch (error) {

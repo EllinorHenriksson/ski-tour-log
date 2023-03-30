@@ -84,15 +84,18 @@ export class UserController {
       }
 
       const user = await this.#service.insert(data)
-
       const collectionURL = this.#getCollectionURL(req)
-
-      const links = this.#linkProvider.getRegisterLinks(collectionURL, user.id)
 
       res
         .location(`${collectionURL.href}/${user.id}`)
         .status(201)
-        .json({ data: user, links })
+        .json({
+          user: {
+            data: user,
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, false)
+          },
+          links: this.#linkProvider.getRegisterLinks(collectionURL)
+        })
     } catch (error) {
       let err = error
       if (error.code === 11000) {
@@ -140,9 +143,13 @@ export class UserController {
   async find (req, res, next) {
     const collectionURL = this.#getCollectionURL(req)
 
-    const links = this.#linkProvider.getDocumentLinks(collectionURL, req.requestedUser.id, req.authenticatedUser?.sub === req.requestedUser.id)
-
-    res.json({ data: req.requestedUser, links })
+    res.json({
+      user: {
+        data: req.requestedUser,
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedUser.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+      },
+      links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser.id)
+    })
   }
 
   /**
@@ -172,9 +179,11 @@ export class UserController {
       const count = await this.#service.getCount()
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count })
 
-      res.json({ data: users, links })
+      res.json({
+        users: this.#linkProvider.populateWithLinks(users, collectionURL),
+        links: this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count })
+      })
     } catch (error) {
       next(error)
     }
@@ -196,10 +205,15 @@ export class UserController {
       const user = await this.#service.update(req.requestedUser.id, partialUser)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
 
       res
-        .json({ data: user, links })
+        .json({
+          user: {
+            data: user,
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true)
+          },
+          links: this.#linkProvider.getPatchLinks(collectionURL, user.id)
+        })
     } catch (error) {
       let err = error
       if (error.code === 11000) {
@@ -226,9 +240,14 @@ export class UserController {
       const user = await this.#service.replace(req.requestedUser.id, { username, password })
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
 
-      res.json({ data: user, links })
+      res.json({
+        user: {
+          data: user,
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true)
+        },
+        links: this.#linkProvider.getPutLinks(collectionURL, user.id)
+      })
     } catch (error) {
       let err = error
       if (error.code === 11000) {

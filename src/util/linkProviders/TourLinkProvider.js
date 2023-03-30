@@ -1,9 +1,8 @@
 import { LinkProviderBase } from './LinkProviderBase.js'
 
 export class TourLinkProvider extends LinkProviderBase {
-  getDocumentLinks (collectionURL, id, authorized) {
-    const documentURL = `${collectionURL}/${id}`
-    const links = super.getDocumentLinks(collectionURL, id, authorized)
+  getDocumentLinks (documentURL, authorized) {
+    const links = super.getDocumentLinks(documentURL, authorized)
 
     if (authorized) {
       links.delete = {
@@ -15,7 +14,7 @@ export class TourLinkProvider extends LinkProviderBase {
     return links
   }
 
-  getCollectionLinks (collectionURL, pageInfo, authorized) {
+  getCollectionLinks (collectionURL, pageInfo, authorized = null) {
     const links = super.getCollectionLinks(collectionURL, pageInfo)
 
     if (authorized) {
@@ -28,6 +27,19 @@ export class TourLinkProvider extends LinkProviderBase {
     return links
   }
 
+  getCreateLinks (collectionURL) {
+    return {
+      self: {
+        method: 'POST',
+        href: collectionURL
+      },
+      collectionURL: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+  }
+
   getDeleteLinks (collectionURL, id) {
     const links = {
       self: {
@@ -36,10 +48,6 @@ export class TourLinkProvider extends LinkProviderBase {
       },
       collection: {
         method: 'GET',
-        href: collectionURL
-      },
-      create: {
-        method: 'POST',
         href: collectionURL
       }
     }

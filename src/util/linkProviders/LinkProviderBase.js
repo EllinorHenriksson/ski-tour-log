@@ -1,14 +1,9 @@
 export class LinkProviderBase {
-  getDocumentLinks (collectionURL, id, authorized) {
-    const documentURL = `${collectionURL}/${id}`
+  getDocumentLinks (documentURL, authorized) {
     const links = {
       self: {
         method: 'GET',
         href: documentURL
-      },
-      collection: {
-        method: 'GET',
-        href: collectionURL
       }
     }
 
@@ -27,7 +22,7 @@ export class LinkProviderBase {
     return links
   }
 
-  getCollectionLinks (collectionURL, pageInfo) {
+  getCollectionLinks (collectionURL, pageInfo, authorized = null) {
     const { pageSize, pageStartIndex, count } = pageInfo
 
     const links = {
@@ -52,5 +47,64 @@ export class LinkProviderBase {
     }
 
     return links
+  }
+
+  populateWithLinks (docs, collectionURL) {
+    const docsWithLinks = []
+
+    for (const doc in docs) {
+      const docWithLinks = {
+        data: doc,
+        links: {
+          self: {
+            method: 'GET',
+            href: `${collectionURL}/${doc.id}`
+          }
+        }
+      }
+
+      docsWithLinks.push(docWithLinks)
+    }
+
+    return docsWithLinks
+  }
+
+  getFindLinks (collectionURL, id) {
+    return {
+      self: {
+        method: 'GET',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+  }
+
+  getPatchLinks (collectionURL, id) {
+    return {
+      self: {
+        method: 'PATCH',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+  }
+
+  getPutLinks (collectionURL, id) {
+    return {
+      self: {
+        method: 'PUT',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
   }
 }
