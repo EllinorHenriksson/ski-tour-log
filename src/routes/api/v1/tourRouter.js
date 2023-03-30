@@ -27,14 +27,22 @@ router.param('id',
   (req, res, next, id) => resolveTourController(req).loadTour(req, res, next, id)
 )
 
+// Param loading
+router.param('id',
+  (req, res, next, id) => resolveTourController(req).loadTour(req, res, next, id)
+)
+
 // End points
 router.get('/',
   (req, res, next) => resolveAuthTool(req).authenticateJWT(req, res, next),
   (req, res, next) => resolveTourController(req).findAll(req, res, next)
 )
 
-// TODO: Lägg in authentisering och auktorisering
-router.post('/', (req, res, next) => resolveTourController(req).create(req, res, next))
+router.post('/',
+  (req, res, next) => resolveAuthTool(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveAuthTool(req).authorizeUser(req, res, next),
+  (req, res, next) => resolveTourController(req).create(req, res, next)
+)
 
 router.get('/:id',
   (req, res, next) => resolveAuthTool(req).authenticateJWT(req, res, next),

@@ -8,7 +8,9 @@ import { HomeController } from '../controllers/HomeController.js'
 
 import { AuthTool } from '../util/AuthTool.js'
 
-import { LinkProvider } from '../util/LinkProvider.js'
+import { UserLinkProvider } from '../util/linkProviders/UserLinkProvider.js'
+import { TourLinkProvider } from '../util/linkProviders/TourLinkProvider.js'
+
 import { InputValidator } from '../util/InputValidator.js'
 
 import { UserModel } from '../models/UserModel.js'
@@ -33,7 +35,12 @@ iocContainer.register('AuthTool', AuthTool, {
   dependencies: null
 })
 
-iocContainer.register('LinkProviderSingleton', LinkProvider, {
+iocContainer.register('UserLinkProviderSingleton', UserLinkProvider, {
+  dependencies: null,
+  singleton: true
+})
+
+iocContainer.register('TourLinkProviderSingleton', TourLinkProvider, {
   dependencies: null,
   singleton: true
 })
@@ -63,7 +70,7 @@ iocContainer.register('UserServiceSingleton', UserService, {
 iocContainer.register('UserController', UserController, {
   dependencies: [
     'UserServiceSingleton',
-    'LinkProviderSingleton',
+    'UserLinkProviderSingleton',
     'InputValidatorSingleton'
   ]
 })
@@ -88,7 +95,7 @@ iocContainer.register('TourServiceSingleton', TourService, {
 iocContainer.register('TourController', TourController, {
   dependencies: [
     'TourServiceSingleton',
-    'LinkProviderSingleton',
+    'TourLinkProviderSingleton',
     'InputValidatorSingleton'
   ]
 })

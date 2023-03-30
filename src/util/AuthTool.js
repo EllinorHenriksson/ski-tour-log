@@ -43,7 +43,7 @@ export class AuthTool {
    * @param {Function} next - Express next middleware function.
    */
   authorizeUser (req, res, next) {
-    if (req.authenticatedUser.sub !== req.params.id) {
+    if (req.authenticatedUser.sub !== req.requestedUser.id) {
       next(createError(403, 'You do not have rights to this resource'))
     }
 

@@ -5,8 +5,7 @@
 import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
 import { InputValidator } from '../util/InputValidator.js'
-import { LinkProvider } from '../util/LinkProvider.js'
-
+import { UserLinkProvider } from '../util/linkProviders/UserLinkProvider.js'
 /**
  * Encapsulates a controller.
  */
@@ -21,7 +20,7 @@ export class UserController {
   /**
    * A link provider.
    *
-   * @type {LinkProvider}
+   * @type {UserLinkProvider}
    */
   #linkProvider
 
@@ -36,7 +35,7 @@ export class UserController {
    * Initializes a new instance.
    *
    * @param {UserService} service - A service instantiated from a class with the same capabilities as UserService.
-   * @param {LinkProvider} linkProvider - A link provider.
+   * @param {UserLinkProvider} linkProvider - A user link provider.
    * @param {InputValidator} inputValidator - An input validator.
    */
   constructor (service, linkProvider, inputValidator) {
@@ -120,7 +119,7 @@ export class UserController {
       const jwt = this.#service.createJWT(user)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDocumentLinks(collectionURL, user.id, true)
+      const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
       res.json({ jwt, links })
     } catch (error) {
