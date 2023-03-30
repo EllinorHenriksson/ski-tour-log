@@ -223,6 +223,26 @@ export class TourController {
     }
   }
 
+  /**
+   * Deletes a specific tour.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async delete (req, res, next) {
+    try {
+      await this.#service.delete(req.requestedTour.id)
+
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id, true)
+
+      res.json({ links })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   #getCollectionURL (req) {
     return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
   }

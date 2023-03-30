@@ -1,6 +1,18 @@
 import { LinkProviderBase } from './LinkProviderBase.js'
 
 export class UserLinkProvider extends LinkProviderBase {
+  getDocumentLinks (collectionURL, id, authorized) {
+    const documentURL = `${collectionURL}/${id}`
+    const links = super.getDocumentLinks(collectionURL, id, authorized)
+
+    links.tours = {
+      method: 'GET',
+      href: `${documentURL}/tour`
+    }
+
+    return links
+  }
+
   getRegisterLinks (collectionURL, id) {
     const links = {
       self: {
@@ -28,18 +40,6 @@ export class UserLinkProvider extends LinkProviderBase {
         href: `${collectionURL}/${id}`,
         description: 'Requires authentication'
       }
-    }
-
-    return links
-  }
-
-  getDocumentLinks (collectionURL, id, authorized) {
-    const documentURL = `${collectionURL}/${id}`
-    const links = super.getDocumentLinks(collectionURL, id, authorized)
-
-    links.tours = {
-      method: 'GET',
-      href: `${documentURL}/tour`
     }
 
     return links

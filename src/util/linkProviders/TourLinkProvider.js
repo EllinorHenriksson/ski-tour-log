@@ -27,4 +27,23 @@ export class TourLinkProvider extends LinkProviderBase {
 
     return links
   }
+
+  getDeleteLinks (collectionURL, id) {
+    const links = {
+      self: {
+        method: 'DELETE',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      },
+      create: {
+        method: 'POST',
+        href: collectionURL
+      }
+    }
+
+    return links
+  }
 }
