@@ -178,7 +178,6 @@ export class TourController {
       if ('glide' in req.body) partialTour.glide = req.body.glide
       if ('grip' in req.body) partialTour.grip = req.body.grip
       if ('description' in req.body) partialTour.description = req.body.description
-      if ('skier' in req.body) partialTour.skier = req.body.skier
 
       const tour = await this.#service.update(req.requestedTour.id, partialTour)
 
@@ -187,6 +186,33 @@ export class TourController {
 
       res
         .json({ data: tour, links })
+    } catch (error) {
+      let err = error
+      if (error.name === 'ValidationError') {
+        err = createError(400, error.message)
+      }
+
+      next(err)
+    }
+  }
+
+  /**
+   * Completely updates a specific tour.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async update (req, res, next) {
+    try {
+      const { date, duration, distance, temperature, wax, glide, grip, description } = req.body
+
+      const tour = await this.#service.replace(req.requestedTour.id, { date, duration, distance, temperature, wax, glide, grip, description, skier: req.requestedUser.id })
+
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDocumentLinks(collectionURL, tour.id, true)
+
+      res.json({ data: tour, links })
     } catch (error) {
       let err = error
       if (error.name === 'ValidationError') {
