@@ -4,6 +4,7 @@
 
 import express from 'express'
 import { router as tourRouter } from './tourRouter.js'
+import { router as webhookRouter } from './webhookRouter.js'
 
 export const router = express.Router()
 
@@ -57,3 +58,4 @@ router.put('/:id',
 
 // Forward routing
 router.use('/:id/tour', tourRouter)
+router.use('/:id/webhook', webhookRouter)

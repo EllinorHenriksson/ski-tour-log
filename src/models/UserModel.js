@@ -22,6 +22,11 @@ const schema = new mongoose.Schema({
   }
 })
 
+// Salts and hashes password before save.
+schema.pre('save', async function () {
+  this.password = await bcrypt.hash(this.password, 10)
+})
+
 schema.virtual('id').get(function () {
   return this._id.toHexString()
 })
@@ -44,11 +49,6 @@ const convertOptions = {
 schema.set('timestamps', true)
 schema.set('toObject', convertOptions)
 schema.set('toJSON', convertOptions)
-
-// Salts and hashes password before save.
-schema.pre('save', async function () {
-  this.password = await bcrypt.hash(this.password, 10)
-})
 
 /**
  * Authenticates a user.

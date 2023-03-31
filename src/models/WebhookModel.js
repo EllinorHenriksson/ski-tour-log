@@ -10,7 +10,6 @@ const { isURL } = validator
 const schema = new mongoose.Schema({
   endpoint: {
     type: String,
-    maxLength: [500, 'The endpoint must not be longer than 500 characters'],
     validate: [isURL, 'The endpoint must be in a valid URL format'],
     required: [true, 'Endpoint is required']
   },

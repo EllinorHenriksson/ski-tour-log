@@ -62,11 +62,11 @@ export class WebhookController {
           'X-Skitourlog-Token': webhook.token,
           'Content-Type': 'application/json'
         },
-        body: {
+        body: JSON.stringify({
           event,
           action,
           attributes
-        }
+        })
       })
       promises.push(promise)
     }
