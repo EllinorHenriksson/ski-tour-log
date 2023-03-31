@@ -9,7 +9,7 @@ import { HomeController } from '../controllers/HomeController.js'
 import { AuthTool } from '../util/AuthTool.js'
 
 import { UserLinkProvider } from '../util/linkProviders/UserLinkProvider.js'
-import { TourLinkProvider } from '../util/linkProviders/TourLinkProvider.js'
+import { NonUserLinkProvider } from '../util/linkProviders/NonUserLinkProvider.js'
 
 import { InputValidator } from '../util/InputValidator.js'
 
@@ -22,6 +22,11 @@ import { TourModel } from '../models/TourModel.js'
 import { TourRepository } from '../repositories/TourRepository.js'
 import { TourService } from '../services/TourService.js'
 import { TourController } from '../controllers/TourController.js'
+
+import { WebhookModel } from '../models/WebhookModel.js'
+import { WebhookRepository } from '../repositories/WebhookRepository.js'
+import { WebhookService } from '../services/WebhookService.js'
+import { WebhookController } from '../controllers/WebhookController.js'
 
 const iocContainer = new IoCContainer()
 
@@ -40,7 +45,7 @@ iocContainer.register('UserLinkProviderSingleton', UserLinkProvider, {
   singleton: true
 })
 
-iocContainer.register('TourLinkProviderSingleton', TourLinkProvider, {
+iocContainer.register('NonUserLinkProviderSingleton', NonUserLinkProvider, {
   dependencies: null,
   singleton: true
 })
@@ -95,7 +100,32 @@ iocContainer.register('TourServiceSingleton', TourService, {
 iocContainer.register('TourController', TourController, {
   dependencies: [
     'TourServiceSingleton',
-    'TourLinkProviderSingleton',
+    'NonUserLinkProviderSingleton',
+    'InputValidatorSingleton'
+  ]
+})
+
+// Webhook
+iocContainer.register('WebhookModelType', WebhookModel, { type: true })
+
+iocContainer.register('WebhookRepositorySingleton', WebhookRepository, {
+  dependencies: [
+    'WebhookModelType'
+  ],
+  singleton: true
+})
+
+iocContainer.register('WebhookServiceSingleton', WebhookService, {
+  dependencies: [
+    'WebhookRepositorySingleton'
+  ],
+  singleton: true
+})
+
+iocContainer.register('WebhookController', WebhookController, {
+  dependencies: [
+    'WebhookServiceSingleton',
+    'WebhookLinkProviderSingleton',
     'InputValidatorSingleton'
   ]
 })

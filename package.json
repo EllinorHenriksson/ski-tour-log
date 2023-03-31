@@ -23,7 +23,8 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "@lnu/eslint-config": "^1.1.7",

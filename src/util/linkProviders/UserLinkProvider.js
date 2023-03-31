@@ -1,12 +1,17 @@
-import { LinkProviderBase } from './LinkProviderBase.js'
+import { LinkProvider } from './LinkProviderBase.js'
 
-export class UserLinkProvider extends LinkProviderBase {
+export class UserLinkProvider extends LinkProvider {
   getDocumentLinks (documentURL, authorized) {
     const links = super.getDocumentLinks(documentURL, authorized)
 
     links.tours = {
       method: 'GET',
       href: `${documentURL}/tour`
+    }
+
+    links.tours = {
+      method: 'GET',
+      href: `${documentURL}/webhook`
     }
 
     return links

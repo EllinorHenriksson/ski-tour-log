@@ -4,7 +4,6 @@
 
 import { MongooseServiceBase } from './MongooseServiceBase.js'
 import { UserRepository } from '../repositories/UserRepository.js'
-import jwt from 'jsonwebtoken'
 
 /**
  * Encapsulates a user service.
@@ -21,19 +20,5 @@ export class UserService extends MongooseServiceBase {
 
   async authenticate (username, password) {
     return this._repository.authenticate(username, password)
-  }
-
-  createJWT (user) {
-    const payload = {
-      sub: user.id,
-      username: user.username
-    }
-
-    const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
-
-    return jwt.sign(payload, privateKey, {
-      algorithm: 'RS256',
-      expiresIn: process.env.ACCESS_TOKEN_LIFE
-    })
   }
 }

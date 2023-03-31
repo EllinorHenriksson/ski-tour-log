@@ -37,8 +37,6 @@ const convertOptions = {
    */
   transform: (doc, ret) => {
     delete ret._id
-    delete ret.createdAt
-    delete ret.updatedAt
     delete ret.password
   }
 }

@@ -6,6 +6,9 @@ import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { UserLinkProvider } from '../util/linkProviders/UserLinkProvider.js'
+
+import jwt from 'jsonwebtoken'
+
 /**
  * Encapsulates a controller.
  */
@@ -50,7 +53,7 @@ export class UserController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
-   * @param {string} id - The value of the id for the task to load.
+   * @param {string} id - The value of the id for the user to load.
    */
   async loadUser (req, res, next, id) {
     try {
@@ -84,6 +87,9 @@ export class UserController {
       }
 
       const user = await this.#service.insert(data)
+      // Fire webhook
+      
+
       const collectionURL = this.#getCollectionURL(req)
 
       res
@@ -119,12 +125,22 @@ export class UserController {
     try {
       const user = await this.#service.authenticate(req.body.username, req.body.password)
 
-      const jwt = this.#service.createJWT(user)
+      const payload = {
+        sub: user.id,
+        username: user.username
+      }
+
+      const privateKey = Buffer.from(process.env.PRIVATE_KEY, 'base64')
+
+      const accessToken = jwt.sign(payload, privateKey, {
+        algorithm: 'RS256',
+        expiresIn: process.env.ACCESS_TOKEN_LIFE
+      })
 
       const collectionURL = this.#getCollectionURL(req)
       const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
-      res.json({ jwt, links })
+      res.json({ accessToken, links })
     } catch (error) {
       const err = createError(401, 'Credentials invalid or not provided')
       err.cause = error
@@ -164,14 +180,14 @@ export class UserController {
       let pageSize = 10
       let pageStartIndex = 0
 
-      if (req.query.pageSize) {
-        this.#inputValidator.validatePageSize(req.query.pageSize)
-        pageSize = parseInt(req.query.pageSize)
+      if (req.query['page-size']) {
+        this.#inputValidator.validatePageSize(req.query['page-size'])
+        pageSize = parseInt(req.query['page-size'])
       }
 
-      if (req.query.pageStartIndex) {
-        this.#inputValidator.validatePageStartIndex(req.query.pageStartIndex)
-        pageStartIndex = parseInt(req.query.pageStartIndex)
+      if (req.query['page-start-index']) {
+        this.#inputValidator.validatePageStartIndex(req.query['page-start-index'])
+        pageStartIndex = parseInt(req.query['page-start-index'])
       }
 
       const users = await this.#service.get(null, null, { limit: pageSize, skip: pageStartIndex })

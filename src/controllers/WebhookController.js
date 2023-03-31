@@ -1,19 +1,19 @@
 /**
- * Module for the TourController.
+ * Module for the WebhookController.
  */
 
 import createError from 'http-errors'
-import { TourService } from '../services/TourService.js'
+import { WebhookService } from '../services/WebhookService.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { NonUserLinkProvider } from '../util/linkProviders/NonUserLinkProvider.js'
 /**
  * Encapsulates a controller.
  */
-export class TourController {
+export class WebhookController {
   /**
    * The service.
    *
-   * @type {TourService}
+   * @type {WebhookService}
    */
   #service
 
@@ -34,7 +34,7 @@ export class TourController {
   /**
    * Initializes a new instance.
    *
-   * @param {TourService} service - A service instantiated from a class with the same capabilities as TourService.
+   * @param {WebhookService} service - A service instantiated from a class with the same capabilities as WebhookService.
    * @param {NonUserLinkProvider} linkProvider - A non user link provider.
    * @param {InputValidator} inputValidator - An input validator.
    */
@@ -45,23 +45,23 @@ export class TourController {
   }
 
   /**
-   * Provide req.requestedTour to the route if :id is present.
+   * Provide req.requestedWebhook to the route if :id is present.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
-   * @param {string} id - The value of the id for the tour to load.
+   * @param {string} id - The value of the id for the webhook to load.
    */
-  async loadTour (req, res, next, id) {
+  async loadWebhook (req, res, next, id) {
     try {
-      const tours = await this.#service.get({ _id: id, owner: req.requestedUser.id })
+      const webhooks = await this.#service.get({ _id: id, owner: req.requestedUser.id })
 
-      if (tours.length === 0) {
+      if (webhooks.length === 0) {
         next(createError(404, 'The requested resource was not found.'))
         return
       }
 
-      req.requestedTour = tours[0]
+      req.requestedWebhook = webhooks[0]
 
       next()
     } catch (error) {
@@ -70,7 +70,7 @@ export class TourController {
   }
 
   /**
-   * Sends a JSON response containing a tour.
+   * Sends a JSON response containing a webhook.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -80,16 +80,16 @@ export class TourController {
     const collectionURL = this.#getCollectionURL(req)
 
     res.json({
-      tour: {
-        data: req.requestedTour,
-        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedTour.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+      webhook: {
+        data: req.requestedWebhook,
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedWebhook.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
       },
       links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser)
     })
   }
 
   /**
-   * Sends a JSON response containing all tours.
+   * Sends a JSON response containing all webhooks.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -110,13 +110,13 @@ export class TourController {
         pageStartIndex = parseInt(req.query['page-start-index'])
       }
 
-      const tours = await this.#service.get({ owner: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
+      const webhooks = await this.#service.get({ owner: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
 
       const count = await this.#service.getCount()
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
-        tours: this.#linkProvider.populateWithLinks(tours, collectionURL),
+        webhooks: this.#linkProvider.populateWithLinks(webhooks, collectionURL),
         links: this.#linkProvider.getCollectionLinks(collectionURL, { pageSize, pageStartIndex, count }, req.authenticatedUser?.sub === req.requestedUser.id)
       })
     } catch (error) {
@@ -125,7 +125,7 @@ export class TourController {
   }
 
   /**
-   * Creates a tour.
+   * Creates a webhook.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -134,27 +134,23 @@ export class TourController {
   async create (req, res, next) {
     try {
       const data = {
-        date: req.body.date,
-        duration: req.body.duration,
-        distance: req.body.distance,
-        temperature: req.body.temperature,
-        wax: req.body.wax,
-        glide: req.body.glide,
-        grip: req.body.grip,
-        description: req.body.description,
+        endpoint: req.body.endpoint,
+        token: req.body.token,
+        user: req.body.user,
+        tour: req.body.tour,
         owner: req.requestedUser.id
       }
 
-      const tour = await this.#service.insert(data)
+      const webhook = await this.#service.insert(data)
       const collectionURL = this.#getCollectionURL(req)
 
       res
-        .location(`${collectionURL.href}/${tour.id}`)
+        .location(`${collectionURL.href}/${webhook.id}`)
         .status(201)
         .json({
-          tour: {
-            data: tour,
-            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+          webhook: {
+            data: webhook,
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
           },
           links: this.#linkProvider.getCreateLinks(collectionURL)
         })
@@ -169,7 +165,7 @@ export class TourController {
   }
 
   /**
-   * Partially updates a specific tour.
+   * Partially updates a specific webhook.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -177,25 +173,21 @@ export class TourController {
    */
   async partiallyUpdate (req, res, next) {
     try {
-      const partialTour = {}
-      if ('date' in req.body) partialTour.date = req.body.date
-      if ('duration' in req.body) partialTour.duration = req.body.duration
-      if ('distance' in req.body) partialTour.distance = req.body.distance
-      if ('temperature' in req.body) partialTour.temperature = req.body.temperature
-      if ('wax' in req.body) partialTour.wax = req.body.wax
-      if ('glide' in req.body) partialTour.glide = req.body.glide
-      if ('grip' in req.body) partialTour.grip = req.body.grip
-      if ('description' in req.body) partialTour.description = req.body.description
+      const partialWebhook = {}
+      if ('endpoint' in req.body) partialWebhook.endpoint = req.body.endpoint
+      if ('token' in req.body) partialWebhook.token = req.body.token
+      if ('user' in req.body) partialWebhook.user = req.body.user
+      if ('tour' in req.body) partialWebhook.tour = req.body.tour
 
-      const tour = await this.#service.update(req.requestedTour.id, partialTour)
+      const webhook = await this.#service.update(req.requestedWebhook.id, partialWebhook)
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
-        tour: {
-          data: tour,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+        webhook: {
+          data: webhook,
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
         },
-        links: this.#linkProvider.getPatchLinks(collectionURL, tour.id)
+        links: this.#linkProvider.getPatchLinks(collectionURL, webhook.id)
       })
     } catch (error) {
       let err = error
@@ -208,7 +200,7 @@ export class TourController {
   }
 
   /**
-   * Completely updates a specific tour.
+   * Completely updates a specific webhook.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -216,18 +208,18 @@ export class TourController {
    */
   async update (req, res, next) {
     try {
-      const { date, duration, distance, temperature, wax, glide, grip, description } = req.body
+      const { endpoint, token, user, tour } = req.body
 
-      const tour = await this.#service.replace(req.requestedTour.id, { date, duration, distance, temperature, wax, glide, grip, description, owner: req.requestedUser.id })
+      const webhook = await this.#service.replace(req.requestedWebhook.id, { endpoint, token, user, tour, owner: req.requestedUser.id })
 
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
-        tour: {
-          data: tour,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+        webhook: {
+          data: webhook,
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
         },
-        links: this.#linkProvider.getPutLinks(collectionURL, tour.id)
+        links: this.#linkProvider.getPutLinks(collectionURL, webhook.id)
       })
     } catch (error) {
       let err = error
@@ -240,7 +232,7 @@ export class TourController {
   }
 
   /**
-   * Deletes a specific tour.
+   * Deletes a specific webhook.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -248,10 +240,10 @@ export class TourController {
    */
   async delete (req, res, next) {
     try {
-      await this.#service.delete(req.requestedTour.id)
+      await this.#service.delete(req.requestedWebhook.id)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id)
+      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedWebhook.id)
 
       res.json({ links })
     } catch (error) {

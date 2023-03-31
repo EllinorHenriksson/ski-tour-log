@@ -35,14 +35,14 @@ export class LinkProviderBase {
     if (pageStartIndex - pageSize >= 0) {
       links.prev = {
         method: 'GET',
-        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex - pageSize}`
+        href: `${collectionURL}?page-size=${pageSize}&page-start-index=${pageStartIndex - pageSize}`
       }
     }
 
     if (pageStartIndex + pageSize < count) {
       links.next = {
         method: 'GET',
-        href: `${collectionURL}?pageSize=${pageSize}&pageStartIndex=${pageStartIndex + pageSize}`
+        href: `${collectionURL}?page-size=${pageSize}&page-start-index=${pageStartIndex + pageSize}`
       }
     }
 
@@ -67,6 +67,19 @@ export class LinkProviderBase {
     }
 
     return docsWithLinks
+  }
+
+  getCreateLinks (collectionURL) {
+    return {
+      self: {
+        method: 'POST',
+        href: collectionURL
+      },
+      collectionURL: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
   }
 
   getFindLinks (collectionURL, id) {
@@ -106,5 +119,20 @@ export class LinkProviderBase {
         href: collectionURL
       }
     }
+  }
+
+  getDeleteLinks (collectionURL, id) {
+    const links = {
+      self: {
+        method: 'DELETE',
+        href: `${collectionURL}/${id}`
+      },
+      collection: {
+        method: 'GET',
+        href: collectionURL
+      }
+    }
+
+    return links
   }
 }
