@@ -31,6 +31,11 @@ export class UserLinkProvider extends LinkProviderBase {
       login: {
         method: 'POST',
         href: `${collectionURL}/login`
+      },
+      unregister: {
+        method: 'POST',
+        href: `${collectionURL}/login`,
+        description: 'Requires authentication'
       }
     }
 
@@ -43,10 +48,30 @@ export class UserLinkProvider extends LinkProviderBase {
         method: 'POST',
         href: `${collectionURL}/login`
       },
+      unregister: {
+        method: 'POST',
+        href: `${collectionURL}/unregister`,
+        description: 'Requires authentication'
+      },
       profile: {
         method: 'GET',
         href: `${collectionURL}/${id}`,
         description: 'Requires authentication'
+      }
+    }
+
+    return links
+  }
+
+  getUnregisterLinks (collectionURL) {
+    const links = {
+      self: {
+        method: 'POST',
+        href: `${collectionURL}/unregister`
+      },
+      register: {
+        method: 'POST',
+        href: `${collectionURL}/register`
       }
     }
 

@@ -313,7 +313,7 @@ export class UserController {
       await this.#userService.delete(req.authenticatedUser.sub)
 
       const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.authenticatedUser.sub)
+      const links = this.#linkProvider.getUnregisterLinks(collectionURL, req.authenticatedUser.sub)
 
       res.json({ links })
     } catch (error) {
