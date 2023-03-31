@@ -10,11 +10,6 @@ export class HomeController {
     const url = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
     const links = {
-      users: {
-        method: 'GET',
-        href: `${url}/users`,
-        description: 'Requires authentication'
-      },
       register: {
         method: 'POST',
         href: `${url}/users/register`

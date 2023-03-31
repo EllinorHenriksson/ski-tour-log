@@ -87,8 +87,7 @@ export class UserController {
       }
 
       const user = await this.#service.insert(data)
-      // Fire webhook
-      
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'register', user)
 
       const collectionURL = this.#getCollectionURL(req)
 
@@ -98,7 +97,7 @@ export class UserController {
         .json({
           user: {
             data: user,
-            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, false)
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, false, false)
           },
           links: this.#linkProvider.getRegisterLinks(collectionURL)
         })
@@ -162,7 +161,7 @@ export class UserController {
     res.json({
       user: {
         data: req.requestedUser,
-        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedUser.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedUser.id}`, true, req.authenticatedUser?.sub === req.requestedUser.id)
       },
       links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser.id)
     })
@@ -220,13 +219,15 @@ export class UserController {
 
       const user = await this.#service.update(req.requestedUser.id, partialUser)
 
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'update', user)
+
       const collectionURL = this.#getCollectionURL(req)
 
       res
         .json({
           user: {
             data: user,
-            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true)
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true, true)
           },
           links: this.#linkProvider.getPatchLinks(collectionURL, user.id)
         })
@@ -255,12 +256,14 @@ export class UserController {
 
       const user = await this.#service.replace(req.requestedUser.id, { username, password })
 
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'update', user)
+
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
         user: {
           data: user,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true)
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${user.id}`, true, true)
         },
         links: this.#linkProvider.getPutLinks(collectionURL, user.id)
       })

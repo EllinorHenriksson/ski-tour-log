@@ -6,6 +6,8 @@ import createError from 'http-errors'
 import { WebhookService } from '../services/WebhookService.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { NonUserLinkProvider } from '../util/linkProviders/NonUserLinkProvider.js'
+import fetch from 'node-fetch'
+
 /**
  * Encapsulates a controller.
  */
@@ -42,6 +44,34 @@ export class WebhookController {
     this.#service = service
     this.#linkProvider = linkProvider
     this.#inputValidator = inputValidator
+  }
+
+  async fireWebhooks (event, action, attributes) {
+    let webhooks
+    if (event === 'user') {
+      webhooks = await this.#service.get({ user: true }, ['endpoint'])
+    } else if (event === 'tour') {
+      webhooks = await this.#service.get({ tour: true }, ['endpoint'])
+    }
+
+    const promises = []
+    for (const webhook of webhooks) {
+      const promise = fetch(webhook.endpoint, {
+        method: 'POST',
+        headers: {
+          'X-Skitourlog-Token': webhook.token,
+          'Content-Type': 'application/json'
+        },
+        body: {
+          event,
+          action,
+          attributes
+        }
+      })
+      promises.push(promise)
+    }
+
+    return Promise.all(promises)
   }
 
   /**
@@ -82,7 +112,7 @@ export class WebhookController {
     res.json({
       webhook: {
         data: req.requestedWebhook,
-        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedWebhook.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedWebhook.id}`, true, true)
       },
       links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser)
     })
@@ -150,7 +180,7 @@ export class WebhookController {
         .json({
           webhook: {
             data: webhook,
-            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true, true)
           },
           links: this.#linkProvider.getCreateLinks(collectionURL)
         })
@@ -185,7 +215,7 @@ export class WebhookController {
       res.json({
         webhook: {
           data: webhook,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true, true)
         },
         links: this.#linkProvider.getPatchLinks(collectionURL, webhook.id)
       })
@@ -217,7 +247,7 @@ export class WebhookController {
       res.json({
         webhook: {
           data: webhook,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true)
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${webhook.id}`, true, true)
         },
         links: this.#linkProvider.getPutLinks(collectionURL, webhook.id)
       })

@@ -125,7 +125,7 @@ iocContainer.register('WebhookServiceSingleton', WebhookService, {
 iocContainer.register('WebhookController', WebhookController, {
   dependencies: [
     'WebhookServiceSingleton',
-    'WebhookLinkProviderSingleton',
+    'NonUserLinkProviderSingleton',
     'InputValidatorSingleton'
   ]
 })

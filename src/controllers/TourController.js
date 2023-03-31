@@ -82,9 +82,9 @@ export class TourController {
     res.json({
       tour: {
         data: req.requestedTour,
-        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedTour.id}`, req.authenticatedUser?.sub === req.requestedUser.id)
+        links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${req.requestedTour.id}`, true, req.authenticatedUser?.sub === req.requestedUser.id)
       },
-      links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser)
+      links: this.#linkProvider.getFindLinks(collectionURL, req.requestedUser.id)
     })
   }
 
@@ -146,6 +146,9 @@ export class TourController {
       }
 
       const tour = await this.#service.insert(data)
+
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('tour', 'create', tour)
+
       const collectionURL = this.#getCollectionURL(req)
 
       res
@@ -154,7 +157,7 @@ export class TourController {
         .json({
           tour: {
             data: tour,
-            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+            links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true, true)
           },
           links: this.#linkProvider.getCreateLinks(collectionURL)
         })
@@ -188,12 +191,15 @@ export class TourController {
       if ('description' in req.body) partialTour.description = req.body.description
 
       const tour = await this.#service.update(req.requestedTour.id, partialTour)
+
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('tour', 'update', tour)
+
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
         tour: {
           data: tour,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true, true)
         },
         links: this.#linkProvider.getPatchLinks(collectionURL, tour.id)
       })
@@ -220,12 +226,14 @@ export class TourController {
 
       const tour = await this.#service.replace(req.requestedTour.id, { date, duration, distance, temperature, wax, glide, grip, description, owner: req.requestedUser.id })
 
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('tour', 'update', tour)
+
       const collectionURL = this.#getCollectionURL(req)
 
       res.json({
         tour: {
           data: tour,
-          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true)
+          links: this.#linkProvider.getDocumentLinks(`${collectionURL}/${tour.id}`, true, true)
         },
         links: this.#linkProvider.getPutLinks(collectionURL, tour.id)
       })
@@ -248,7 +256,9 @@ export class TourController {
    */
   async delete (req, res, next) {
     try {
-      await this.#service.delete(req.requestedTour.id)
+      const tour = await this.#service.delete(req.requestedTour.id)
+
+      await req.app.get('container').resolve('WebhookController').fireWebhooks('tour', 'delete', tour)
 
       const collectionURL = this.#getCollectionURL(req)
       const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id)

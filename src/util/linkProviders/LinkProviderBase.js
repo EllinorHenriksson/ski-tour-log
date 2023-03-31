@@ -1,10 +1,14 @@
 export class LinkProviderBase {
-  getDocumentLinks (documentURL, authorized) {
+  getDocumentLinks (documentURL, authenticated, authorized) {
     const links = {
       self: {
         method: 'GET',
         href: documentURL
       }
+    }
+
+    if (!authenticated) {
+      links.self.description = 'Requires authentication'
     }
 
     if (authorized) {
@@ -52,7 +56,7 @@ export class LinkProviderBase {
   populateWithLinks (docs, collectionURL) {
     const docsWithLinks = []
 
-    for (const doc in docs) {
+    for (const doc of docs) {
       const docWithLinks = {
         data: doc,
         links: {
@@ -75,7 +79,7 @@ export class LinkProviderBase {
         method: 'POST',
         href: collectionURL
       },
-      collectionURL: {
+      collection: {
         method: 'GET',
         href: collectionURL
       }

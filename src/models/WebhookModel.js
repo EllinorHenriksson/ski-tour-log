@@ -57,4 +57,4 @@ schema.set('toObject', convertOptions)
 schema.set('toJSON', convertOptions)
 
 // Create a model using the schema.
-export const TourModel = mongoose.model('Tour', schema)
+export const WebhookModel = mongoose.model('Webhook', schema)

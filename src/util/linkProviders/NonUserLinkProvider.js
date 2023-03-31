@@ -1,8 +1,8 @@
-import { LinkProvider } from './LinkProvider.js'
+import { LinkProviderBase } from './LinkProviderBase.js'
 
-export class NonUserLinkProvider extends LinkProvider {
-  getDocumentLinks (documentURL, authorized) {
-    const links = super.getDocumentLinks(documentURL, authorized)
+export class NonUserLinkProvider extends LinkProviderBase {
+  getDocumentLinks (documentURL, authenticated, authorized) {
+    const links = super.getDocumentLinks(documentURL, authenticated, authorized)
 
     if (authorized) {
       links.delete = {
