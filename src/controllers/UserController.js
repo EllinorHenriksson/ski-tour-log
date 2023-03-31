@@ -6,6 +6,8 @@ import createError from 'http-errors'
 import { UserService } from '../services/UserService.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { UserLinkProvider } from '../util/linkProviders/UserLinkProvider.js'
+import { TourService } from '../services/TourService.js'
+import { WebhookService } from '../services/WebhookService.js'
 
 import jwt from 'jsonwebtoken'
 
@@ -14,11 +16,25 @@ import jwt from 'jsonwebtoken'
  */
 export class UserController {
   /**
-   * The service.
+   * A user service.
    *
    * @type {UserService}
    */
-  #service
+  #userService
+
+  /**
+   * A tour service.
+   *
+   * @type {TourService}
+   */
+  #tourService
+
+  /**
+   * A webhook service.
+   *
+   * @type {WebhookService}
+   */
+  #webhookService
 
   /**
    * A link provider.
@@ -37,12 +53,16 @@ export class UserController {
   /**
    * Initializes a new instance.
    *
-   * @param {UserService} service - A service instantiated from a class with the same capabilities as UserService.
+   * @param {UserService} userService - A service instantiated from a class with the same capabilities as UserService.
+   * @param {TourService} tourService - A service instantiated from a class with the same capabilities as TourService.
+   * @param {WebhookService} webhookService - A service instantiated from a class with the same capabilities as WebhookService.
    * @param {UserLinkProvider} linkProvider - A user link provider.
    * @param {InputValidator} inputValidator - An input validator.
    */
-  constructor (service, linkProvider, inputValidator) {
-    this.#service = service
+  constructor (userService, tourService, webhookService, linkProvider, inputValidator) {
+    this.#userService = userService
+    this.#tourService = tourService
+    this.#webhookService = webhookService
     this.#linkProvider = linkProvider
     this.#inputValidator = inputValidator
   }
@@ -57,7 +77,7 @@ export class UserController {
    */
   async loadUser (req, res, next, id) {
     try {
-      const user = await this.#service.getById(id)
+      const user = await this.#userService.getById(id)
 
       if (!user) {
         next(createError(404, 'The requested resource was not found.'))
@@ -86,8 +106,8 @@ export class UserController {
         password: req.body.password
       }
 
-      const user = await this.#service.insert(data)
-      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'register', user)
+      const user = await this.#userService.insert(data)
+      await this.#webhookService.trigger('user', 'register', user)
 
       const collectionURL = this.#getCollectionURL(req)
 
@@ -122,7 +142,7 @@ export class UserController {
    */
   async login (req, res, next) {
     try {
-      const user = await this.#service.authenticate(req.body.username, req.body.password)
+      const user = await this.#userService.authenticate(req.body.username, req.body.password)
 
       const payload = {
         sub: user.id,
@@ -189,9 +209,9 @@ export class UserController {
         pageStartIndex = parseInt(req.query['page-start-index'])
       }
 
-      const users = await this.#service.get(null, null, { limit: pageSize, skip: pageStartIndex })
+      const users = await this.#userService.get(null, null, { limit: pageSize, skip: pageStartIndex })
 
-      const count = await this.#service.getCount()
+      const count = await this.#userService.getCount()
 
       const collectionURL = this.#getCollectionURL(req)
 
@@ -217,9 +237,9 @@ export class UserController {
       if ('username' in req.body) partialUser.username = req.body.username
       if ('password' in req.body) partialUser.password = req.body.password
 
-      const user = await this.#service.update(req.requestedUser.id, partialUser)
+      const user = await this.#userService.update(req.requestedUser.id, partialUser)
 
-      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'update', user)
+      this.#webhookService.trigger('user', 'update', user)
 
       const collectionURL = this.#getCollectionURL(req)
 
@@ -254,9 +274,9 @@ export class UserController {
     try {
       const { username, password } = req.body
 
-      const user = await this.#service.replace(req.requestedUser.id, { username, password })
+      const user = await this.#userService.replace(req.requestedUser.id, { username, password })
 
-      await req.app.get('container').resolve('WebhookController').fireWebhooks('user', 'update', user)
+      await this.#webhookService.trigger('user', 'update', user)
 
       const collectionURL = this.#getCollectionURL(req)
 
@@ -276,6 +296,28 @@ export class UserController {
       }
 
       next(err)
+    }
+  }
+
+  /**
+   * Unregisters the user, removing all related data.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async unregister (req, res, next) {
+    try {
+      await this.#tourService.deleteMany({ owner: req.authenticatedUser.sub })
+      await this.#webhookService.deleteMany({ owner: req.authenticatedUser.sub })
+      await this.#userService.delete(req.authenticatedUser.sub)
+
+      const collectionURL = this.#getCollectionURL(req)
+      const links = this.#linkProvider.getDeleteLinks(collectionURL, req.authenticatedUser.sub)
+
+      res.json({ links })
+    } catch (error) {
+      next(error)
     }
   }
 

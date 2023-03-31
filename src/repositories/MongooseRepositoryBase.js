@@ -182,4 +182,14 @@ export class MongooseRepositoryBase {
       }
     }
   }
+
+  /**
+   * Deletes many documents.
+   *
+   * @param {object} filter - The filter to apply. For example { name: "Ellen" }
+   * @returns {Promise<object>} Promise resolved with an object with the property deletedCount.
+   */
+  async deleteMany (filter) {
+    return this._model.deleteMany(filter)
+  }
 }

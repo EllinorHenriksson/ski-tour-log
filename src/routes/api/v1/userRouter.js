@@ -39,6 +39,11 @@ router.post('/register', (req, res, next) => resolveUserController(req).register
 
 router.post('/login', (req, res, next) => resolveUserController(req).login(req, res, next))
 
+router.post('/unregister',
+  (req, res, next) => resolveAuthTool(req).authenticateJWT(req, res, next),
+  (req, res, next) => resolveUserController(req).unregister(req, res, next)
+)
+
 router.get('/:id',
   (req, res, next) => resolveAuthTool(req).authenticateJWT(req, res, next),
   (req, res, next) => resolveUserController(req).find(req, res, next)

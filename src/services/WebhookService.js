@@ -17,4 +17,32 @@ export class WebhookService extends MongooseServiceBase {
   constructor (repository = new WebhookRepository()) {
     super(repository)
   }
+
+  async trigger (event, action, attributes) {
+    let webhooks
+    if (event === 'user') {
+      webhooks = await this.get({ user: true }, ['endpoint'])
+    } else if (event === 'tour') {
+      webhooks = await this.get({ tour: true }, ['endpoint'])
+    }
+
+    const promises = []
+    for (const webhook of webhooks) {
+      const promise = fetch(webhook.endpoint, {
+        method: 'POST',
+        headers: {
+          'X-Skitourlog-Token': webhook.token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          event,
+          action,
+          attributes
+        })
+      })
+      promises.push(promise)
+    }
+
+    return Promise.all(promises)
+  }
 }

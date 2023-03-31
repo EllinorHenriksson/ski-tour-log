@@ -75,6 +75,8 @@ iocContainer.register('UserServiceSingleton', UserService, {
 iocContainer.register('UserController', UserController, {
   dependencies: [
     'UserServiceSingleton',
+    'TourServiceSingleton',
+    'WebhookServiceSingleton',
     'UserLinkProviderSingleton',
     'InputValidatorSingleton'
   ]
@@ -100,6 +102,7 @@ iocContainer.register('TourServiceSingleton', TourService, {
 iocContainer.register('TourController', TourController, {
   dependencies: [
     'TourServiceSingleton',
+    'WebhookServiceSingleton',
     'NonUserLinkProviderSingleton',
     'InputValidatorSingleton'
   ]

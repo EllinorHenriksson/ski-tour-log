@@ -46,34 +46,6 @@ export class WebhookController {
     this.#inputValidator = inputValidator
   }
 
-  async fireWebhooks (event, action, attributes) {
-    let webhooks
-    if (event === 'user') {
-      webhooks = await this.#service.get({ user: true }, ['endpoint'])
-    } else if (event === 'tour') {
-      webhooks = await this.#service.get({ tour: true }, ['endpoint'])
-    }
-
-    const promises = []
-    for (const webhook of webhooks) {
-      const promise = fetch(webhook.endpoint, {
-        method: 'POST',
-        headers: {
-          'X-Skitourlog-Token': webhook.token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          event,
-          action,
-          attributes
-        })
-      })
-      promises.push(promise)
-    }
-
-    return Promise.all(promises)
-  }
-
   /**
    * Provide req.requestedWebhook to the route if :id is present.
    *
