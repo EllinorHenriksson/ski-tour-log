@@ -1,0 +1,633 @@
+{
+	"info": {
+		"_postman_id": "0dd00d83-5d62-41a8-af8e-3286ca5532d4",
+		"name": "Ski Tour Log API - Add data",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18562649"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "{{base_url}}/user/register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"user_id\", jsonData.user.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"tests[\"Body contains accessToken\"] = \"accessToken\" in jsonData === true;\r",
+									"\r",
+									"pm.collectionVariables.set(\"access_token\", jsonData.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tour",
+			"item": [
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-30T07:07:30+0000\",\r\n    \"duration\": 2,\r\n    \"distance\": 20,\r\n    \"temperature\": -4,\r\n    \"wax\": \"V30 Swix Blue\",\r\n    \"glide\": 5,\r\n    \"grip\": 1,\r\n    \"description\": \"Wonderful tour!\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-12T07:07:30+0000\",\r\n    \"duration\": 3,\r\n    \"distance\": 50,\r\n    \"temperature\": 2,\r\n    \"wax\": \"V55 Red Special\",\r\n    \"glide\": 3,\r\n    \"grip\": 1,\r\n    \"description\": \"Very bad grip, need to use a different wax next time\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-25T07:07:30+0000\",\r\n    \"duration\": 0.5,\r\n    \"distance\": 3,\r\n    \"temperature\": -8,\r\n    \"wax\": \"V40 Blue Extra\",\r\n    \"glide\": 4,\r\n    \"grip\": 3,\r\n    \"description\": \"Felt very tired\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-04-01T07:07:30+0000\",\r\n    \"duration\": 1,\r\n    \"distance\": 10,\r\n    \"temperature\": 0,\r\n    \"wax\": \"V30 Swix Blue\",\r\n    \"glide\": 5,\r\n    \"grip\": 5,\r\n    \"description\": \"Nice sunny weather\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-30T07:07:30+0000\",\r\n    \"duration\": 3,\r\n    \"distance\": 30,\r\n    \"temperature\": -5,\r\n    \"glide\": 5,\r\n    \"grip\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-05T07:07:30+0000\",\r\n    \"duration\": 2,\r\n    \"distance\": 20,\r\n    \"temperature\": -15,\r\n    \"wax\": \"V30 Swix Blue\",\r\n    \"glide\": 5,\r\n    \"grip\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-30T07:07:30+0000\",\r\n    \"duration\": 2,\r\n    \"distance\": 20,\r\n    \"temperature\": -4,\r\n    \"wax\": \"V30 Swix Blue\",\r\n    \"glide\": 5,\r\n    \"grip\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-30T07:07:30+0000\",\r\n    \"duration\": 4,\r\n    \"distance\": 50,\r\n    \"temperature\": -7,\r\n    \"wax\": \"V30 VP 65 Racing Pro\",\r\n    \"glide\": 5,\r\n    \"grip\": 3\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-02T07:07:30+0000\",\r\n    \"duration\": 2,\r\n    \"distance\": 40,\r\n    \"temperature\": -1,\r\n    \"glide\": 5,\r\n    \"grip\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/user/{{user_id}}/tour",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2023-03-10T07:07:30+0000\",\r\n    \"duration\": 2,\r\n    \"distance\": 20,\r\n    \"temperature\": -4,\r\n    \"wax\": \"V55 Red Special\",\r\n    \"glide\": 5,\r\n    \"grip\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/{{user_id}}/tour",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"tour"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"",
+					"pm.test(\"Content-Type is present\", function () {",
+					"    pm.response.to.have.header(\"Content-Type\");",
+					"});",
+					"",
+					"pm.test(\"Response must have a json body\", function () {",
+					"    pm.response.to.be.withBody;",
+					"    pm.response.to.be.json;",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "other_user_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "tour_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "other_tour_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "access_token_other_user",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "webhook_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "other_webhook_id",
+			"value": "Initial value",
+			"type": "string"
+		},
+		{
+			"key": "base_url",
+			"value": "https://cscloud8-135.lnu.se/ski-tour-log/api/v1",
+			"type": "string"
+		}
+	]
+}
