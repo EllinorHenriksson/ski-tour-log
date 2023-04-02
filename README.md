@@ -1,3 +1,11 @@
+# Ski Tour Log
+This REST API lets the users register, log in and store data about crosscountry ski tours they have made. Authenticated users are able to read each other's data but only modify their own. They also have the possibility to register webhooks to be notified of events.   
+
+Public URL: [https://cscloud8-135.lnu.se/ski-tour-log/api/v1](https://cscloud8-135.lnu.se/ski-tour-log/api/v1)
+
+# Testing
+The API can be manually tested through the public URL or automatically using the Postman collection [ski_tour_log.postman_collection.json](./postman/ski_tour_log.postman_collection.json). To run the collection, either import it to your Postman desktop application and run it manually, or run it in the terminal with Newman using the command ```newman run ski_tour_log.postman_collection.json```. The database has been populated with data using the Postman collection [ski_tour_log_add_data.postman_collection.json](./postman/ski_tour_log_add_data.postman_collection.json) using [data.json](./postman/data.json) as data.
+
 # API design assignment
 
 In this assignment, you will implement a web API following the theory of REST. We encourage you to have your ideas about the API service to build. Maybe you have some idea you want to start with through an API-driven design? For those of you without any ideas, we present a scenario below. That will also give a hint of the extent of this assignment.
