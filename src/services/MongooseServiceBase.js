@@ -36,6 +36,11 @@ export class MongooseServiceBase {
     return this._repository.get(filter, projection, options)
   }
 
+  /**
+   * Gets the count of documents in the collection.
+   *
+   * @returns {number} The count.
+   */
   async getCount () {
     return this._repository.getCount()
   }

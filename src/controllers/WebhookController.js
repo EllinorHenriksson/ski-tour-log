@@ -6,7 +6,6 @@ import createError from 'http-errors'
 import { WebhookService } from '../services/WebhookService.js'
 import { InputValidator } from '../util/InputValidator.js'
 import { NonUserLinkProvider } from '../util/linkProviders/NonUserLinkProvider.js'
-import fetch from 'node-fetch'
 
 /**
  * Encapsulates a controller.
@@ -59,7 +58,7 @@ export class WebhookController {
       const webhooks = await this.#service.get({ _id: id, owner: req.requestedUser.id })
 
       if (webhooks.length === 0) {
-        next(createError(404, 'The requested resource was not found.'))
+        next(createError(404, 'The requested webhook was not found.'))
         return
       }
 
@@ -79,7 +78,7 @@ export class WebhookController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    const collectionURL = this.#getCollectionURL(req)
+    const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
     res.json({
       webhook: {
@@ -115,7 +114,7 @@ export class WebhookController {
       const webhooks = await this.#service.get({ owner: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
 
       const count = await this.#service.getCount()
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         webhooks: this.#linkProvider.populateWithLinks(webhooks, collectionURL),
@@ -144,10 +143,10 @@ export class WebhookController {
       }
 
       const webhook = await this.#service.insert(data)
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res
-        .location(`${collectionURL.href}/${webhook.id}`)
+        .location(`${collectionURL}/${webhook.id}`)
         .status(201)
         .json({
           webhook: {
@@ -182,7 +181,7 @@ export class WebhookController {
       if ('tour' in req.body) partialWebhook.tour = req.body.tour
 
       const webhook = await this.#service.update(req.requestedWebhook.id, partialWebhook)
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         webhook: {
@@ -214,7 +213,7 @@ export class WebhookController {
 
       const webhook = await this.#service.replace(req.requestedWebhook.id, { endpoint, token, user, tour, owner: req.requestedUser.id })
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         webhook: {
@@ -244,16 +243,12 @@ export class WebhookController {
     try {
       await this.#service.delete(req.requestedWebhook.id)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
       const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedWebhook.id)
 
       res.json({ links })
     } catch (error) {
       next(error)
     }
-  }
-
-  #getCollectionURL (req) {
-    return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
   }
 }

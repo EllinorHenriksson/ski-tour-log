@@ -18,6 +18,14 @@ export class WebhookService extends MongooseServiceBase {
     super(repository)
   }
 
+  /**
+   * Triggers all registered webhooks for the current event.
+   *
+   * @param {string} event - The event.
+   * @param {string} action - The action.
+   * @param {object} attributes - The attributes of the modified resource.
+   * @returns {Promise} - A promise that resolves with all resolved promises of the sent out webhook requests.
+   */
   async trigger (event, action, attributes) {
     let webhooks
     if (event === 'user') {

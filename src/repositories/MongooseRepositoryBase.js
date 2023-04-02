@@ -66,6 +66,11 @@ export class MongooseRepositoryBase {
       .exec()
   }
 
+  /**
+   * Gets the count of documents in the collection.
+   *
+   * @returns {number} The count.
+   */
   async getCount () {
     return this._model.estimatedDocumentCount()
   }

@@ -68,7 +68,7 @@ export class TourController {
       const tours = await this.#tourService.get({ _id: id, owner: req.requestedUser.id })
 
       if (tours.length === 0) {
-        next(createError(404, 'The requested resource was not found.'))
+        next(createError(404, 'The requested tour was not found.'))
         return
       }
 
@@ -88,7 +88,7 @@ export class TourController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    const collectionURL = this.#getCollectionURL(req)
+    const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
     res.json({
       tour: {
@@ -124,7 +124,7 @@ export class TourController {
       const tours = await this.#tourService.get({ owner: req.requestedUser.id }, null, { limit: pageSize, skip: pageStartIndex })
 
       const count = await this.#tourService.getCount()
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         tours: this.#linkProvider.populateWithLinks(tours, collectionURL),
@@ -160,10 +160,10 @@ export class TourController {
 
       await this.#webhookService.trigger('tour', 'create', tour)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res
-        .location(`${collectionURL.href}/${tour.id}`)
+        .location(`${collectionURL}/${tour.id}`)
         .status(201)
         .json({
           tour: {
@@ -205,7 +205,7 @@ export class TourController {
 
       await this.#webhookService.trigger('tour', 'update', tour)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         tour: {
@@ -239,7 +239,7 @@ export class TourController {
 
       await this.#webhookService.trigger('tour', 'update', tour)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         tour: {
@@ -271,16 +271,12 @@ export class TourController {
 
       await this.#webhookService.trigger('tour', 'delete', tour)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
       const links = this.#linkProvider.getDeleteLinks(collectionURL, req.requestedTour.id)
 
       res.json({ links })
     } catch (error) {
       next(error)
     }
-  }
-
-  #getCollectionURL (req) {
-    return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
   }
 }

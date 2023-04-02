@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
 
+/**
+ * Represent an authentication tool to be used by the different routers.
+ */
 export class AuthTool {
   /**
    * Authenticates requests and populates req.authenticatedUser with the user id.

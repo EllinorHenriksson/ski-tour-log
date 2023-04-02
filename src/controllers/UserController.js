@@ -80,7 +80,7 @@ export class UserController {
       const user = await this.#userService.getById(id)
 
       if (!user) {
-        next(createError(404, 'The requested resource was not found.'))
+        next(createError(404, 'The requested user was not found.'))
         return
       }
 
@@ -109,10 +109,10 @@ export class UserController {
       const user = await this.#userService.insert(data)
       await this.#webhookService.trigger('user', 'register', user)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res
-        .location(`${collectionURL.href}/${user.id}`)
+        .location(`${collectionURL}/${user.id}`)
         .status(201)
         .json({
           user: {
@@ -156,7 +156,7 @@ export class UserController {
         expiresIn: process.env.ACCESS_TOKEN_LIFE
       })
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
       const links = this.#linkProvider.getLoginLinks(collectionURL, user.id)
 
       res.json({ accessToken, links })
@@ -169,6 +169,28 @@ export class UserController {
   }
 
   /**
+   * Unregisters the user, removing all related data.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async unregister (req, res, next) {
+    try {
+      await this.#tourService.deleteMany({ owner: req.authenticatedUser.sub })
+      await this.#webhookService.deleteMany({ owner: req.authenticatedUser.sub })
+      await this.#userService.delete(req.authenticatedUser.sub)
+
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
+      const links = this.#linkProvider.getUnregisterLinks(collectionURL, req.authenticatedUser.sub)
+
+      res.json({ links })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
    * Sends a JSON response containing a user.
    *
    * @param {object} req - Express request object.
@@ -176,7 +198,7 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async find (req, res, next) {
-    const collectionURL = this.#getCollectionURL(req)
+    const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
     res.json({
       user: {
@@ -213,7 +235,7 @@ export class UserController {
 
       const count = await this.#userService.getCount()
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         users: this.#linkProvider.populateWithLinks(users, collectionURL),
@@ -241,7 +263,7 @@ export class UserController {
 
       this.#webhookService.trigger('user', 'update', user)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res
         .json({
@@ -278,7 +300,7 @@ export class UserController {
 
       await this.#webhookService.trigger('user', 'update', user)
 
-      const collectionURL = this.#getCollectionURL(req)
+      const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
 
       res.json({
         user: {
@@ -297,31 +319,5 @@ export class UserController {
 
       next(err)
     }
-  }
-
-  /**
-   * Unregisters the user, removing all related data.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   */
-  async unregister (req, res, next) {
-    try {
-      await this.#tourService.deleteMany({ owner: req.authenticatedUser.sub })
-      await this.#webhookService.deleteMany({ owner: req.authenticatedUser.sub })
-      await this.#userService.delete(req.authenticatedUser.sub)
-
-      const collectionURL = this.#getCollectionURL(req)
-      const links = this.#linkProvider.getUnregisterLinks(collectionURL, req.authenticatedUser.sub)
-
-      res.json({ links })
-    } catch (error) {
-      next(error)
-    }
-  }
-
-  #getCollectionURL (req) {
-    return new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}`)
   }
 }

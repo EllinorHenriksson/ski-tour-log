@@ -18,6 +18,14 @@ export class UserRepository extends MongooseRepositoryBase {
     super(model)
   }
 
+  /**
+   * Authenticates user credentials.
+   *
+   * @param {string} username - The username.
+   * @param {string} password - The password.
+   * @throws {Error} If the credentials are incorrect.
+   * @returns {Promise<object>} Promise resolved with the authenticated user.
+   */
   async authenticate (username, password) {
     return this._model.authenticate(username, password)
   }

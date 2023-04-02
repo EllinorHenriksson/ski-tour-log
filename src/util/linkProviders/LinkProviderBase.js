@@ -1,4 +1,15 @@
+/**
+ * Represents a link provider base.
+ */
 export class LinkProviderBase {
+  /**
+   * Gets the relevant hypermedia links on a document level.
+   *
+   * @param {string} documentURL - The url of the document.
+   * @param {boolean} authenticated - True if the user is authenticated.
+   * @param {boolean} authorized - True if the user is authorized.
+   * @returns {object} - An object with link objects.
+   */
   getDocumentLinks (documentURL, authenticated, authorized) {
     const links = {
       self: {
@@ -26,6 +37,14 @@ export class LinkProviderBase {
     return links
   }
 
+  /**
+   * Gets the relevant hypermedia links on a collection level.
+   *
+   * @param {string} collectionURL - The url of the collection.
+   * @param {object} pageInfo - An object with the properties pageSize, pageStartIndex and count.
+   * @param {boolean} authorized - True if the user is authorized (defaults to null).
+   * @returns {object} - An object with link objects.
+   */
   getCollectionLinks (collectionURL, pageInfo, authorized = null) {
     const { pageSize, pageStartIndex, count } = pageInfo
 
@@ -53,6 +72,13 @@ export class LinkProviderBase {
     return links
   }
 
+  /**
+   * Creates and returns an array of documents that have been populated with links.
+   *
+   * @param {object[]} docs - The documents to populate with links.
+   * @param {*} collectionURL - The url of the collection that hte documents belong to.
+   * @returns {object[]} The documents populated with links.
+   */
   populateWithLinks (docs, collectionURL) {
     const docsWithLinks = []
 
@@ -73,6 +99,12 @@ export class LinkProviderBase {
     return docsWithLinks
   }
 
+  /**
+   * Gets hypermedia links for when creating a document resource.
+   *
+   * @param {string} collectionURL - The collection URL.
+   * @returns {object} An object with link objects.
+   */
   getCreateLinks (collectionURL) {
     return {
       self: {
@@ -86,6 +118,13 @@ export class LinkProviderBase {
     }
   }
 
+  /**
+   * Gets hypermedia links for when finding a document resource.
+   *
+   * @param {string} collectionURL - The url of the collection that the document resource belongs to.
+   * @param {string} id - The id of the document resource.
+   * @returns {object} An object with link objects.
+   */
   getFindLinks (collectionURL, id) {
     return {
       self: {
@@ -99,6 +138,13 @@ export class LinkProviderBase {
     }
   }
 
+  /**
+   * Gets hypermedia links for when partially updating a document resource.
+   *
+   * @param {string} collectionURL - The url of the collection that the document resource belongs to.
+   * @param {string} id - The id of the document resource.
+   * @returns {object} An object with link objects.
+   */
   getPatchLinks (collectionURL, id) {
     return {
       self: {
@@ -112,6 +158,13 @@ export class LinkProviderBase {
     }
   }
 
+  /**
+   * Gets hypermedia links for when replacing a document resource.
+   *
+   * @param {string} collectionURL - The url of the collection that the document resource belongs to.
+   * @param {string} id - The id of the document resource.
+   * @returns {object} An object with link objects.
+   */
   getPutLinks (collectionURL, id) {
     return {
       self: {
@@ -125,6 +178,13 @@ export class LinkProviderBase {
     }
   }
 
+  /**
+   * Gets hypermedia links for when deleting a document resource.
+   *
+   * @param {string} collectionURL - The url of the collection that the document resource belongs to.
+   * @param {string} id - The id of the document resource.
+   * @returns {object} An object with link objects.
+   */
   getDeleteLinks (collectionURL, id) {
     const links = {
       self: {
