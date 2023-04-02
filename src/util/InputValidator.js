@@ -1,4 +1,4 @@
-import { createError, HttpError } from 'http-errors'
+import createError, { HttpError } from 'http-errors'
 
 /**
  * Represents an input validator.
