@@ -179,7 +179,9 @@ export class UserController {
     try {
       await this.#tourService.deleteMany({ owner: req.authenticatedUser.sub })
       await this.#webhookService.deleteMany({ owner: req.authenticatedUser.sub })
-      await this.#userService.delete(req.authenticatedUser.sub)
+      const user = await this.#userService.delete(req.authenticatedUser.sub)
+
+      await this.#webhookService.trigger('user', 'unregister', user)
 
       const collectionURL = `${req.protocol}://${req.get('host')}${req.baseUrl}`
       const links = this.#linkProvider.getUnregisterLinks(collectionURL, req.authenticatedUser.sub)
