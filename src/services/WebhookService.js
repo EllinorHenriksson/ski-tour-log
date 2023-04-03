@@ -5,6 +5,8 @@
 import { MongooseServiceBase } from './MongooseServiceBase.js'
 import { WebhookRepository } from '../repositories/WebhookRepository.js'
 
+import fetch from 'node-fetch'
+
 /**
  * Encapsulates a webhook service.
  */
@@ -31,7 +33,7 @@ export class WebhookService extends MongooseServiceBase {
     if (event === 'user') {
       webhooks = await this.get({ user: true }, ['endpoint'])
     } else if (event === 'tour') {
-      webhooks = await this.get({ tour: true }, ['endpoint'])
+      webhooks = await this.get({ tour: true }, ['endpoint', 'token'])
     }
 
     const promises = []
